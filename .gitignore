@@ -46,3 +46,5 @@ work
 *trace*
 
 smregions
+# Tests
+.pytest_cache

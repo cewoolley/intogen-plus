@@ -49,5 +49,11 @@ $(NON_EXPRESSED_GENES): $(NEGATIVE_GENE_SET)
 	$(NOOP)
 
 
+# Outdated to current HUGO symbols, used to harmonise the genes of omics data
+SYMBOLS_MAP_DATASET = $(others_dir)/mapping_new_hugo_symbols.json
+$(SYMBOLS_MAP_DATASET): $(SYMBOLS_MAP) | $(others_dir)
+	cp -f $< $@
+
+
 DATASETS += $(SOMATIC_PON) $(OLFACTORY_RECEPTORS) \
-	$(NEGATIVE_GENE_SET) $(NON_EXPRESSED_GENES)
+	$(NEGATIVE_GENE_SET) $(NON_EXPRESSED_GENES) $(SYMBOLS_MAP_DATASET)

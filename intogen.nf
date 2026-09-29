@@ -6,6 +6,26 @@ STEPS_FOLDER = file(params.stepsFolder)
 ANNOTATIONS = Channel.value(params.annotations)
 REGIONS = Channel.value("${params.datasets}/regions/cds.regions.gz")
 
+// Optional omics data: DNA methylation (e.g. array beta values) and RNA-seq.
+// Files are assigned to cohorts by their name: <COHORT>.<anything> (e.g. TCGA_WXS_BRCA.beta.tsv.gz)
+METHYLATION_INPUT = params.methylation ?
+	Channel.fromPath(params.methylation.tokenize()).map{ it -> [it.baseName.split('\\.')[0], it] } : Channel.empty()
+EXPRESSION_INPUT = params.expression ?
+	Channel.fromPath(params.expression.tokenize()).map{ it -> [it.baseName.split('\\.')[0], it] } : Channel.empty()
+
+// Empty files standing for missing optional inputs (e.g. cohorts without omics data)
+PLACEHOLDERS = "${baseDir}/assets/placeholders"
+OMICS_SAMPLES = Channel.value(file(params.omics_samples ?: "${PLACEHOLDERS}/NO_OMICS_SAMPLES"))
+
+def placeholder(value, name) {
+	value != null ? value : file("${PLACEHOLDERS}/${name}")
+}
+
+// Command line option for an optional input file (empty if it is a placeholder)
+def optArg(flag, path) {
+	path.name.startsWith('NO_') ? '' : "${flag} ${path}"
+}
+
 
 
 process ParseInput {
@@ -387,7 +407,7 @@ process ProcessVEPoutput {
 }
 
 
-PARSED_VEP.into { PARSED_VEP1; PARSED_VEP2; PARSED_VEP3; PARSED_VEP4; PARSED_VEP5; PARSED_VEP6; PARSED_VEP7 }
+PARSED_VEP.into { PARSED_VEP1; PARSED_VEP2; PARSED_VEP3; PARSED_VEP4; PARSED_VEP5; PARSED_VEP6; PARSED_VEP7; PARSED_VEP8 }
 
 process FilterNonSynonymous {
 	tag "Filter non synonymus ${cohort}"
@@ -575,12 +595,199 @@ process HotMAPS {
 }
 
 
+/*
+ * Omics layers (optional): DNA methylation and RNA-seq
+ */
+
+process ParseMethylation {
+	tag "Parse methylation ${cohort}"
+	label "core"
+	publishDir "${STEPS_FOLDER}/methylation", mode: "copy"
+
+	input:
+		tuple val(cohort), path(input) from METHYLATION_INPUT
+		path samples from OMICS_SAMPLES
+
+	output:
+		tuple val(cohort), path(output), path(output_normal) into METHYLATION_MATRIX
+		path("${output}.stats.json") into STATS_METHYLATION_MATRIX
+
+	script:
+		output = "${cohort}.promoter_methylation.tsv.gz"
+		output_normal = "${cohort}.promoter_methylation.normal.tsv.gz"
+		probes = params.methylation_probes ?: "${params.datasets}/methylation/promoter_probes.tsv.gz"
+		"""
+		parse-methylation --input ${input} \
+			--output ${output} --output-normal ${output_normal} \
+			--probes ${probes} \
+			--values ${params.methylation_values} \
+			${optArg('--samples', samples)}
+		"""
+}
+
+METHYLATION_MATRIX.into { METHYLATION_MATRIX1; METHYLATION_MATRIX2 }
+
+process ParseExpression {
+	tag "Parse expression ${cohort}"
+	label "core"
+	publishDir "${STEPS_FOLDER}/expression", mode: "copy"
+
+	input:
+		tuple val(cohort), path(input) from EXPRESSION_INPUT
+		path samples from OMICS_SAMPLES
+
+	output:
+		tuple val(cohort), path(output) into EXPRESSION_MATRIX
+		path("${output}.stats.json") into STATS_EXPRESSION_MATRIX
+
+	script:
+		output = "${cohort}.expression_matrix.tsv.gz"
+		"""
+		parse-expression --input ${input} --output ${output} \
+			--units ${params.expression_units} \
+			${optArg('--samples', samples)}
+		"""
+}
+
+EXPRESSION_MATRIX.into { EXPRESSION_MATRIX1; EXPRESSION_MATRIX2; EXPRESSION_MATRIX3 }
+
+process ExpressionAnalysis {
+	tag "Expression analysis ${cohort}"
+	label "core"
+	publishDir "${STEPS_FOLDER}/expression", mode: "copy"
+
+	input:
+		tuple val(cohort), path(input) from EXPRESSION_MATRIX1
+
+	output:
+		tuple val(cohort), path(output) into OUT_EXPRESSION
+		tuple val(cohort), path(events) into OUT_EXPRESSION_EVENTS
+		path("${output}.stats.json") into STATS_EXPRESSION
+
+	script:
+		output = "${cohort}.expression.tsv.gz"
+		events = "${cohort}.expression_events.tsv.gz"
+		"""
+		expression-analysis --input ${input} --output ${output} --events ${events}
+		"""
+}
+
+OUT_EXPRESSION.into { OUT_EXPRESSION1; OUT_EXPRESSION2 }
+
+// Methylation of every cohort, with its expression when available
+METHYLATION_ANALYSIS_INPUTS = METHYLATION_MATRIX1
+	.join(EXPRESSION_MATRIX2, remainder: true)
+	.filter { it[1] != null }
+	.map { it -> [it[0], it[1], it[2], placeholder(it[3], 'NO_EXPRESSION_MATRIX')] }
+
+process MethylationAnalysis {
+	tag "Methylation analysis ${cohort}"
+	label "core"
+	publishDir "${STEPS_FOLDER}/methylation", mode: "copy"
+
+	input:
+		tuple val(cohort), path(input), path(normal), path(expression) from METHYLATION_ANALYSIS_INPUTS
+
+	output:
+		tuple val(cohort), path(output) into OUT_METHYLATION
+		tuple val(cohort), path(events) into OUT_METHYLATION_EVENTS
+		path("${output}.stats.json") into STATS_METHYLATION
+
+	script:
+		output = "${cohort}.methylation.tsv.gz"
+		events = "${cohort}.methylation_events.tsv.gz"
+		"""
+		methylation-analysis --input ${input} --normal ${normal} \
+			${optArg('--expression', expression)} \
+			--output ${output} --events ${events}
+		"""
+}
+
+OUT_METHYLATION.into { OUT_METHYLATION1; OUT_METHYLATION2 }
+
+// Cohorts with mutations and at least one omics layer
+OMICS_FEATURES_INPUTS = PARSED_VEP8
+	.join(EXPRESSION_MATRIX3, remainder: true)
+	.join(OUT_EXPRESSION1, remainder: true)
+	.join(METHYLATION_MATRIX2.map { it -> [it[0], it[1]] }, remainder: true)
+	.join(OUT_METHYLATION1, remainder: true)
+	.join(OUT_METHYLATION_EVENTS, remainder: true)
+	.filter {
+		if (it[1] == null) {
+			log.warn "Omics data of cohort ${it[0]} are not integrated: there are no mutation results for it " +
+				"(omics file names must start with the cohort ID followed by a dot)"
+		}
+		it[1] != null && it[2..-1].any { x -> x != null }
+	}
+	.map { it -> [it[0], it[1],
+		placeholder(it[2], 'NO_EXPRESSION_MATRIX'), placeholder(it[3], 'NO_EXPRESSION'),
+		placeholder(it[4], 'NO_METHYLATION_MATRIX'), placeholder(it[5], 'NO_METHYLATION'),
+		placeholder(it[6], 'NO_METHYLATION_EVENTS')] }
+
+process OmicsFeatures {
+	tag "Omics features ${cohort}"
+	label "core"
+	publishDir "${STEPS_FOLDER}/omics", mode: "copy"
+
+	input:
+		tuple val(cohort), path(mutations), path(expression_matrix), path(expression), path(methylation_matrix), path(methylation), path(methylation_events) from OMICS_FEATURES_INPUTS
+
+	output:
+		tuple val(cohort), path(output) into OUT_OMICS
+		path("${output}.stats.json") into STATS_OMICS
+
+	script:
+		output = "${cohort}.omics.tsv.gz"
+		"""
+		omics-features --mutations ${mutations} --output ${output} \
+			${optArg('--expression-matrix', expression_matrix)} \
+			${optArg('--expression', expression)} \
+			${optArg('--methylation-matrix', methylation_matrix)} \
+			${optArg('--methylation', methylation)} \
+			${optArg('--methylation-events', methylation_events)}
+		"""
+}
+
+OUT_OMICS.into { OUT_OMICS1; OUT_OMICS2 }
+OMICS_LIST = OUT_OMICS2.map { it -> it[1] }
+
+process OmicsSummary {
+	tag "Omics summary"
+	label "core"
+	publishDir "${OUTPUT}", mode: "copy"
+
+	input:
+		path(input) from OMICS_LIST.collect()
+
+	output:
+		path("omics.tsv") into OMICS_SUMMARY
+
+	script:
+		"""
+		omics-summary --output omics.tsv ${input}
+		"""
+}
+
+
+COMBINATION_INPUTS = OUT_ONCODRIVEFML.join(OUT_ONCODRIVECLUSTL).join(OUT_DNDSCV1).join(OUT_SMREGIONS1).join(OUT_CBASE).join(OUT_MUTPANNING).join(OUT_HOTMAPS)
+if (params.integrate_omics) {
+	// omics-based evidence is added to the combination of the cohorts that have it
+	COMBINATION_INPUTS = COMBINATION_INPUTS
+		.join(OUT_METHYLATION2, remainder: true)
+		.join(OUT_EXPRESSION2, remainder: true)
+		.filter { it[1] != null }
+		.map { it -> it[0..-3] + [placeholder(it[-2], 'NO_METHYLATION'), placeholder(it[-1], 'NO_EXPRESSION')] }
+} else {
+	COMBINATION_INPUTS = COMBINATION_INPUTS
+		.map { it -> it + [placeholder(null, 'NO_METHYLATION'), placeholder(null, 'NO_EXPRESSION')] }
+}
+
 process Combination {
 	tag "Combination ${cohort}"
 	publishDir "${STEPS_FOLDER}/combination", mode: "copy"
 
     input:
-        tuple val(cohort), path(fml), path(clustl), path(dndscv), path(smregions), path(cbase), path(mutpanning), path(hotmaps) from OUT_ONCODRIVEFML.join(OUT_ONCODRIVECLUSTL).join(OUT_DNDSCV1).join(OUT_SMREGIONS1).join(OUT_CBASE).join(OUT_MUTPANNING).join(OUT_HOTMAPS)
+        tuple val(cohort), path(fml), path(clustl), path(dndscv), path(smregions), path(cbase), path(mutpanning), path(hotmaps), path(methylation), path(expression) from COMBINATION_INPUTS
 
     output:
         tuple val(cohort), path("${cohort}.05.out.gz") into OUT_COMBINATION
@@ -594,7 +801,9 @@ process Combination {
 			--smregions ${smregions} \
 			--cbase ${cbase} \
 			--mutpanning ${mutpanning} \
-			--hotmaps ${hotmaps}
+			--hotmaps ${hotmaps} \
+			${optArg('--methylation', methylation)} \
+			${optArg('--expression', expression)}
 		"""
 
 }
@@ -708,13 +917,24 @@ process MutationsSummary {
 }
 
 
+DRIVER_DISCOVERY_INPUTS = OUT_COMBINATION.join(VARIANTS_DECONSTRUCTSIGS2).join(OUT_DECONSTRUCTSIGS_SIGLIKELIHOOD).join(OUT_SMREGIONS2).join(OUT_ONCODRIVECLUSTL_CLUSTERS).join(OUT_HOTMAPS_CLUSTERS).join(OUT_DNDSCV2).join(CANCERS3)
+if (params.methylation || params.expression) {
+	// omics features are added to the cohorts that have them
+	DRIVER_DISCOVERY_INPUTS = DRIVER_DISCOVERY_INPUTS
+		.join(OUT_OMICS1, remainder: true)
+		.filter { it[1] != null }
+		.map { it -> it[0..-2] + [placeholder(it[-1], 'NO_OMICS')] }
+} else {
+	DRIVER_DISCOVERY_INPUTS = DRIVER_DISCOVERY_INPUTS.map { it -> it + [placeholder(null, 'NO_OMICS')] }
+}
+
 process DriverDiscovery {
 	tag "Driver discovery ${cohort}"
 	publishDir "${STEPS_FOLDER}/drivers", mode: "copy"
 	label "core"
 
     input:
-        tuple val(cohort), path(combination), path(deconstruct_in), path(sig_likelihood), path(smregions), path(clustl_clusters), path(hotmaps_clusters), path(dndscv), val(cancer) from OUT_COMBINATION.join(VARIANTS_DECONSTRUCTSIGS2).join(OUT_DECONSTRUCTSIGS_SIGLIKELIHOOD).join(OUT_SMREGIONS2).join(OUT_ONCODRIVECLUSTL_CLUSTERS).join(OUT_HOTMAPS_CLUSTERS).join(OUT_DNDSCV2).join(CANCERS3)
+        tuple val(cohort), path(combination), path(deconstruct_in), path(sig_likelihood), path(smregions), path(clustl_clusters), path(hotmaps_clusters), path(dndscv), val(cancer), path(omics) from DRIVER_DISCOVERY_INPUTS
 
     output:
 		path(output_drivers) into DRIVERS
@@ -734,7 +954,8 @@ process DriverDiscovery {
 			--hotmaps ${hotmaps_clusters} \
 			--dndscv ${dndscv} \
 			--ctype ${cancer} \
-			--cohort ${cohort}
+			--cohort ${cohort} \
+			${optArg('--omics', omics)}
 		"""
 }
 
