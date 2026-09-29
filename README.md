@@ -56,6 +56,17 @@ the drivers (`omics.tsv` and extra columns in `drivers.tsv`).
 With `--integrate_omics true` this evidence is also added to the combination
 of driver identification methods. See `docs/source/omics.rst`.
 
+#### Pathways and co-occurrence of dysregulation (optional)
+
+With `--pathways true`, IntOGen also tests whether gene sets (Reactome pathways and
+MSigDB hallmarks, or custom ones with `--gene_sets`) are under selection beyond their
+individually significant genes (the *long tail* of rarely altered genes), in the mutations
+and, when provided, in the epigenetic silencing and expression outliers. Then it finds
+drivers, silenced or dysregulated genes and pathways that are altered together in the same
+tumours more often than expected, and groups them into modules
+(`pathways.tsv`, `pathway_cooccurrence.tsv` and `pathway_modules.tsv`).
+See `docs/source/pathways.rst`.
+
 [comment]: <> (FIXME add example in test)
 
 To avoid stopping the pipeline execution for one or a few incorrect

@@ -26,6 +26,12 @@ def optArg(flag, path) {
 	path.name.startsWith('NO_') ? '' : "${flag} ${path}"
 }
 
+// Command line option for a list of optional input files (quoted, separated by spaces)
+def optFiles(flag, files) {
+	def names = (files instanceof java.nio.file.Path ? [files] : files.collect()).findAll { !it.name.startsWith('NO_') }
+	names ? "${flag} \"${names.join(' ')}\"" : ''
+}
+
 
 
 process ParseInput {
@@ -407,7 +413,7 @@ process ProcessVEPoutput {
 }
 
 
-PARSED_VEP.into { PARSED_VEP1; PARSED_VEP2; PARSED_VEP3; PARSED_VEP4; PARSED_VEP5; PARSED_VEP6; PARSED_VEP7; PARSED_VEP8 }
+PARSED_VEP.into { PARSED_VEP1; PARSED_VEP2; PARSED_VEP3; PARSED_VEP4; PARSED_VEP5; PARSED_VEP6; PARSED_VEP7; PARSED_VEP8; PARSED_VEP9 }
 
 process FilterNonSynonymous {
 	tag "Filter non synonymus ${cohort}"
@@ -615,7 +621,7 @@ process ParseMethylation {
 	script:
 		output = "${cohort}.promoter_methylation.tsv.gz"
 		output_normal = "${cohort}.promoter_methylation.normal.tsv.gz"
-		probes = params.methylation_probes ?: "${params.datasets}/methylation/promoter_probes.tsv.gz"
+		probes = params.methylation_probes ? file(params.methylation_probes) : "${params.datasets}/methylation/promoter_probes.tsv.gz"
 		"""
 		parse-methylation --input ${input} \
 			--output ${output} --output-normal ${output_normal} \
@@ -625,7 +631,7 @@ process ParseMethylation {
 		"""
 }
 
-METHYLATION_MATRIX.into { METHYLATION_MATRIX1; METHYLATION_MATRIX2 }
+METHYLATION_MATRIX.into { METHYLATION_MATRIX1; METHYLATION_MATRIX2; METHYLATION_MATRIX3 }
 
 process ParseExpression {
 	tag "Parse expression ${cohort}"
@@ -649,7 +655,7 @@ process ParseExpression {
 		"""
 }
 
-EXPRESSION_MATRIX.into { EXPRESSION_MATRIX1; EXPRESSION_MATRIX2; EXPRESSION_MATRIX3 }
+EXPRESSION_MATRIX.into { EXPRESSION_MATRIX1; EXPRESSION_MATRIX2; EXPRESSION_MATRIX3; EXPRESSION_MATRIX4 }
 
 process ExpressionAnalysis {
 	tag "Expression analysis ${cohort}"
@@ -672,7 +678,7 @@ process ExpressionAnalysis {
 		"""
 }
 
-OUT_EXPRESSION.into { OUT_EXPRESSION1; OUT_EXPRESSION2 }
+OUT_EXPRESSION.into { OUT_EXPRESSION1; OUT_EXPRESSION2; OUT_EXPRESSION3 }
 
 // Methylation of every cohort, with its expression when available
 METHYLATION_ANALYSIS_INPUTS = METHYLATION_MATRIX1
@@ -703,7 +709,8 @@ process MethylationAnalysis {
 		"""
 }
 
-OUT_METHYLATION.into { OUT_METHYLATION1; OUT_METHYLATION2 }
+OUT_METHYLATION.into { OUT_METHYLATION1; OUT_METHYLATION2; OUT_METHYLATION3 }
+OUT_METHYLATION_EVENTS.into { OUT_METHYLATION_EVENTS1; OUT_METHYLATION_EVENTS2 }
 
 // Cohorts with mutations and at least one omics layer
 OMICS_FEATURES_INPUTS = PARSED_VEP8
@@ -711,7 +718,7 @@ OMICS_FEATURES_INPUTS = PARSED_VEP8
 	.join(OUT_EXPRESSION1, remainder: true)
 	.join(METHYLATION_MATRIX2.map { it -> [it[0], it[1]] }, remainder: true)
 	.join(OUT_METHYLATION1, remainder: true)
-	.join(OUT_METHYLATION_EVENTS, remainder: true)
+	.join(OUT_METHYLATION_EVENTS1, remainder: true)
 	.filter {
 		if (it[1] == null) {
 			log.warn "Omics data of cohort ${it[0]} are not integrated: there are no mutation results for it " +
@@ -939,6 +946,7 @@ process DriverDiscovery {
     output:
 		path(output_drivers) into DRIVERS
 		path(output_vet) into VET
+		tuple val(cohort), path(output_vet) into VET_COHORT
 
 	script:
 		output_drivers = "${cohort}.drivers.tsv"
@@ -959,6 +967,90 @@ process DriverDiscovery {
 		"""
 }
 
+
+/*
+ * Pathway analysis (optional): selection of gene sets through mutations and omics layers,
+ * beyond their individually significant genes, and co-occurrence of dysregulation events
+ */
+
+if (params.pathways) {
+	PATHWAY_INPUTS = OUT_DNDSCV_GENEMUTS.join(PARSED_VEP9).join(VET_COHORT)
+		.join(OUT_METHYLATION3, remainder: true)
+		.join(OUT_METHYLATION_EVENTS2, remainder: true)
+		.join(METHYLATION_MATRIX3.map { it -> [it[0], it[1]] }, remainder: true)
+		.join(OUT_EXPRESSION3, remainder: true)
+		.join(OUT_EXPRESSION_EVENTS, remainder: true)
+		.join(EXPRESSION_MATRIX4, remainder: true)
+		.filter { it[1] != null }
+		.map { it -> it[0..3] + [
+			placeholder(it[4], 'NO_METHYLATION'), placeholder(it[5], 'NO_METHYLATION_EVENTS'),
+			placeholder(it[6], 'NO_METHYLATION_MATRIX'), placeholder(it[7], 'NO_EXPRESSION'),
+			placeholder(it[8], 'NO_EXPRESSION_EVENTS'), placeholder(it[9], 'NO_EXPRESSION_MATRIX')] }
+} else {
+	PATHWAY_INPUTS = Channel.empty()
+}
+
+process PathwayAnalysis {
+	tag "Pathway analysis ${cohort}"
+	label "core"
+	publishDir "${STEPS_FOLDER}/pathways", mode: "copy"
+
+	input:
+		tuple val(cohort), path(genemuts), path(mutations), path(vet), path(methylation), path(methylation_events), path(methylation_matrix), path(expression), path(expression_events), path(expression_matrix) from PATHWAY_INPUTS
+
+	output:
+		tuple val(cohort), path(output) into OUT_PATHWAYS
+		tuple val(cohort), path(cooccurrence) into OUT_PATHWAY_COOCCURRENCE
+		tuple val(cohort), path(genes) into OUT_PATHWAY_GENES
+		path("${output}.stats.json") into STATS_PATHWAYS
+
+	script:
+		output = "${cohort}.pathways.tsv.gz"
+		cooccurrence = "${cohort}.pathway_cooccurrence.tsv.gz"
+		genes = "${cohort}.pathway_genes.tsv.gz"
+		geneSets = params.gene_sets ? file(params.gene_sets) : "${params.datasets}/pathways/gene_sets.tsv.gz"
+		"""
+		pathway-analysis --genemuts ${genemuts} --mutations ${mutations} --vet ${vet} \
+			--gene-sets ${geneSets} \
+			--output ${output} --cooccurrence ${cooccurrence} --genes ${genes} \
+			${optArg('--methylation', methylation)} \
+			${optArg('--methylation-events', methylation_events)} \
+			${optArg('--methylation-matrix', methylation_matrix)} \
+			${optArg('--expression', expression)} \
+			${optArg('--expression-events', expression_events)} \
+			${optArg('--expression-matrix', expression_matrix)}
+		"""
+}
+
+PATHWAY_FILES = OUT_PATHWAYS.map { it -> it[1] }.mix(OUT_PATHWAY_COOCCURRENCE.map { it -> it[1] })
+
+process PathwaySummary {
+	tag "Pathway summary"
+	label "core"
+	publishDir "${OUTPUT}", mode: "copy"
+
+	input:
+		path(input) from PATHWAY_FILES.collect()
+
+	output:
+		path("pathways.tsv") into PATHWAYS_SUMMARY
+		path("pathway_cooccurrence.tsv") into PATHWAY_COOCCURRENCE_SUMMARY
+		path("pathway_modules.tsv") into PATHWAY_MODULES_SUMMARY
+
+	script:
+		"""
+		pathway-summary --pathways pathways.tsv \
+			--cooccurrence pathway_cooccurrence.tsv \
+			--modules pathway_modules.tsv \
+			${input}
+		"""
+}
+
+// Significant gene sets of the genes of each cohort, added to the drivers
+PATHWAY_GENES = params.pathways ?
+	OUT_PATHWAY_GENES.map { it -> it[1] }.collect().ifEmpty(file("${PLACEHOLDERS}/NO_PATHWAYS")) :
+	Channel.value(file("${PLACEHOLDERS}/NO_PATHWAYS"))
+
 process DriverSummary {
 	tag "Driver summary"
 	publishDir "${OUTPUT}", mode: "copy"
@@ -969,6 +1061,7 @@ process DriverSummary {
         path (input_vet) from VET.collect()
         path (mutations) from MUTATIONS_SUMMARY
         path (cohortsSummary) from COHORT_SUMMARY
+        path (pathwayGenes) from PATHWAY_GENES
 
     output:
 		path("drivers.tsv") into DRIVERS_SUMMARY
@@ -980,6 +1073,7 @@ process DriverSummary {
 		drivers-summary \
 			--mutations ${mutations} \
 			--cohorts ${cohortsSummary} \
+			${optFiles('--pathways', pathwayGenes)} \
 			${input} "${input_vet}"
 		"""
 }

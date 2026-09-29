@@ -32,6 +32,9 @@ Currently there are several environment variables that can be defined:
 - ``methylation_gencode``: GENCODE version of the array annotations (default: ``v41``)
 - ``methylation_promoter_upstream`` and ``methylation_promoter_downstream``:
   promoter window around the TSS of the MANE transcripts (default: 1500 and 500 bp)
+- ``reactome_url``: Reactome pathways (GMT) used by the pathway analysis
+  (default: the current release)
+- ``msigdb_version``: version of the MSigDB hallmark gene sets (default: ``2024.1.Hs``)
 
 .. important:: Not all versions of ``ensembl`` and ``cadd``
    might work. At least, they need to be compatible with the working reference
@@ -62,6 +65,12 @@ array annotations of Zhou et al.
 (`InfiniumAnnotation <https://zwdzwd.github.io/InfiniumAnnotation>`_),
 which are downloaded from GitHub. Probes flagged by their general
 quality mask are discarded.
+
+The gene sets of the pathway analysis (``pathways/gene_sets.tsv.gz``)
+are built from the pathways of `Reactome <https://reactome.org>`_
+and the hallmark gene sets of `MSigDB <https://www.gsea-msigdb.org>`_.
+Reactome is downloaded from its current release unless ``reactome_url``
+points to a specific one.
 
 Less important notes
 ********************

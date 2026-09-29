@@ -23,7 +23,19 @@ def load_mutations(mutations):
     return mut_counts
 
 
-def run(mutations, cohorts, files, vet_files):
+PATHWAYS_COLUMNS = ['PATHWAYS', 'MODULES']
+
+
+def load_pathways(files):
+    """Significant gene sets and co-occurrence modules of each gene (pathway-analysis), by cohort"""
+    columns = ['SYMBOL', 'COHORT'] + PATHWAYS_COLUMNS
+    dfs = [pd.read_csv(f, sep='\t').assign(COHORT=os.path.basename(f).split('.')[0]) for f in files]
+    if len(dfs) == 0:
+        return pd.DataFrame(columns=columns)
+    return pd.concat(dfs).reindex(columns=columns)
+
+
+def run(mutations, cohorts, files, vet_files, pathway_files=None):
     l = []
     lv = []
     for file, vet in zip(files, vet_files):
@@ -57,6 +69,11 @@ def run(mutations, cohorts, files, vet_files):
                "EXCESS_MIS", "EXCESS_NON", "EXCESS_SPL"]
     # omics features (only present if some cohort has methylation or expression data)
     columns += [c for c in OMICS_DRIVERS_COLUMNS if c in df.columns]
+    # gene sets significant beyond their individually significant genes and
+    # modules of co-occurring events (pathway analysis)
+    if pathway_files is not None:
+        df = pd.merge(df, load_pathways(pathway_files), on=['COHORT', 'SYMBOL'], how='left')
+        columns += PATHWAYS_COLUMNS
 
     df[columns].sort_values(["SYMBOL", "CANCER_TYPE"]).to_csv('drivers.tsv', sep="\t", index=False)
 
@@ -88,11 +105,15 @@ def run(mutations, cohorts, files, vet_files):
 @click.command()
 @click.option('--mutations', type=click.Path(exists=True), required=True)
 @click.option('--cohorts', type=click.Path(exists=True), required=True)
+@click.option('--pathways', 'pathway_files', default=None,
+              help='Significant gene sets per gene of each cohort (pathway-analysis), separated by spaces')
 @click.argument('files', nargs=-1)
 @click.argument('vet_files', nargs=1)
-def cli(mutations, cohorts, files, vet_files):
+def cli(mutations, cohorts, files, vet_files, pathway_files):
     vet_files = tuple(vet_files.split(' '))
-    run(mutations, cohorts, files, vet_files)
+    if pathway_files is not None:
+        pathway_files = tuple(f for f in pathway_files.split(' ') if f)
+    run(mutations, cohorts, files, vet_files, pathway_files)
 
 
 if __name__ == "__main__":

@@ -46,7 +46,9 @@ setup(
                 'parse-expression = intogen_core.omics.expression:parse_cli',
                 'expression-analysis = intogen_core.omics.expression:analysis_cli',
                 'omics-features = intogen_core.omics.features:cli',
-                'omics-summary = intogen_core.omics.features:summary_cli'
+                'omics-summary = intogen_core.omics.features:summary_cli',
+                'pathway-analysis = intogen_core.pathways.analysis:cli',
+                'pathway-summary = intogen_core.pathways.analysis:summary_cli'
             ]
         },
 )

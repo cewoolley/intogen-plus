@@ -13,6 +13,7 @@ analogously to hypermutated samples in mutation analyses.
 """
 
 import numpy as np
+from scipy import signal
 from scipy import stats as sps
 
 
@@ -155,3 +156,50 @@ def spearman(x, y):
     if mask.sum() < 3 or np.all(x[mask] == x[mask][0]) or np.all(y[mask] == y[mask][0]):
         return np.nan
     return float(sps.spearmanr(x[mask], y[mask])[0])
+
+
+def _convolve(a, b):
+    if len(a) * len(b) < 250000:
+        return np.convolve(a, b)
+    return np.clip(signal.fftconvolve(a, b), 0, None)
+
+
+def sum_pmfs(pmfs):
+    """
+    Probability mass function of the sum of independent discrete variables
+    (with support 0, 1, ...), given their mass functions. The convolutions are
+    done as a balanced tree, which keeps the cost low for many variables.
+    """
+    pmfs = [np.asarray(p, dtype=float) for p in pmfs if len(p) > 0]
+    if len(pmfs) == 0:
+        return np.array([1.0])
+    while len(pmfs) > 1:
+        merged = [_convolve(pmfs[i], pmfs[i + 1]) for i in range(0, len(pmfs) - 1, 2)]
+        if len(pmfs) % 2 == 1:
+            merged.append(pmfs[-1])
+        pmfs = merged
+    pmf = np.clip(pmfs[0], 0, None)
+    return pmf / pmf.sum()
+
+
+def upper_tail(pmf, x):
+    """P(X >= x) given the mass function of X"""
+    if x <= 0:
+        return 1.0
+    if x >= len(pmf):
+        return 0.0
+    return float(min(1.0, pmf[x:].sum()))
+
+
+def binomial_pmf(n, p):
+    """Mass function of a binomial distribution"""
+    return sps.binom.pmf(np.arange(n + 1), n, p)
+
+
+def fisher_combine(pvalues):
+    """Fisher's combination of the finite p-values (NaN if none)"""
+    p = np.asarray([v for v in pvalues if v is not None and np.isfinite(v)], dtype=float)
+    if len(p) == 0:
+        return np.nan
+    p = np.clip(p, 1e-300, 1.0)
+    return float(sps.chi2.sf(-2 * np.log(p).sum(), 2 * len(p)))

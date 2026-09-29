@@ -18,4 +18,5 @@ Welcome to IntOGen's documentation
    boostdm_connection
    mutational_features
    omics
+   pathways
    usage

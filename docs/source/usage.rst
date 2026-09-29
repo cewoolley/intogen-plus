@@ -55,6 +55,10 @@ There are a number of parameters and options that can be added:
 
 --integrate_omics <bool>   Add the methylation and expression evidence to the combination of driver identification methods. Default: ``false``.
 
+--pathways <bool>   Selection of gene sets and co-occurrence of dysregulation events. Default: ``false``. See :doc:`pathways`.
+
+--gene_sets <file>   Gene sets of the pathway analysis (TSV or GMT). Default: :file:`<datasets>/pathways/gene_sets.tsv.gz`.
+
 
 Input & output
 ^^^^^^^^^^^^^^
@@ -111,6 +115,11 @@ By default this pipeline outputs 4 files:
   significant epigenetic silencing or expression outliers in any cohort.
   In addition, omics features are added to :file:`drivers.tsv` and
   :file:`unfiltered_drivers.tsv` (see :doc:`omics`).
+- :file:`pathways.tsv`, :file:`pathway_cooccurrence.tsv` and :file:`pathway_modules.tsv`:
+  only with ``--pathways true``. Gene sets under selection (with and without their
+  individually significant genes) and co-occurring dysregulation events and
+  their modules. In addition, the significant gene sets and modules of each driver
+  are added to :file:`drivers.tsv` (see :doc:`pathways`).
 
 Those files can be found in the path indicated with the
 ``--output`` options.

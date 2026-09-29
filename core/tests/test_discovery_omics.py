@@ -76,6 +76,18 @@ def test_summary_with_and_without_omics(discovery, monkeypatch):
     assert drivers.loc[drivers['COHORT'] == 'WITHOUT', 'EXPRESSED'].isna().all()
     unfiltered = pd.read_csv('unfiltered_drivers.tsv', sep='\t')
     assert 'WARNING_EXPRESSION_SOURCE' in unfiltered.columns
+    assert 'PATHWAYS' not in drivers.columns
+
+    # pathway analysis of one of the cohorts
+    pd.DataFrame({'SYMBOL': ['DRV1', 'DRV3'], 'PATHWAYS': ['Set A;Set B', None], 'MODULES': [None, 'M1']}).to_csv(
+        'WITH.pathway_genes.tsv.gz', sep='\t', index=False)
+    summary.run('mutations.tsv', 'cohorts.tsv', [o[0] for o in outputs], [o[1] for o in outputs],
+                pathway_files=['WITH.pathway_genes.tsv.gz'])
+    drivers = pd.read_csv('drivers.tsv', sep='\t', dtype=str)
+    assert list(drivers.columns[-2:]) == ['PATHWAYS', 'MODULES']
+    with_omics = drivers[drivers['COHORT'] == 'WITH'].set_index('SYMBOL')
+    assert with_omics.loc['DRV1', 'PATHWAYS'] == 'Set A;Set B' and with_omics.loc['DRV3', 'MODULES'] == 'M1'
+    assert drivers.loc[drivers['COHORT'] == 'WITHOUT', 'PATHWAYS'].isna().all()
 
 
 def test_discovery_with_omics(discovery):
