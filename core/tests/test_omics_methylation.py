@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import synthetic
+import synthetic_omics as synthetic
 from intogen_core.omics import io, methylation
 
 

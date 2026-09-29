@@ -14,7 +14,7 @@ try:
 except ImportError:
     sys.modules['bgdata'] = types.ModuleType('bgdata')
 
-import synthetic  # noqa: E402
+import synthetic_omics as synthetic  # noqa: E402
 
 SEED = 2
 

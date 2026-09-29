@@ -5,7 +5,7 @@ import tempfile
 sys.path.insert(0, os.path.dirname(__file__))
 sys.path.insert(1, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import synthetic  # noqa: E402
+import synthetic_methods as synthetic  # noqa: E402
 
 # The combination package needs the datasets folder when it is imported
 if 'INTOGEN_DATASETS' not in os.environ:

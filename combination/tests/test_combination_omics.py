@@ -1,12 +1,10 @@
-import gzip
 import itertools
-import os
 
 import numpy as np
 import pandas as pd
 import pytest
 
-import synthetic
+import synthetic_methods as synthetic
 from intogen_combination import config, grid_optimizer, parser
 
 
