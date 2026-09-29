@@ -112,10 +112,10 @@ def combine_pvals(df, weights_df, methods):
         df['QVALUE_' + 'stouffer_w'] = np.nan
 
     # Custom pvalue combination: Empirical Brown's Method -- including truncated method
-    df = custom_combination(df, 'brown')
+    df = custom_combination(df, 'brown', methods)
 
     # Custom pvalue combination: Fisher's Method -- including truncated method
-    df = custom_combination(df, 'fisher')
+    df = custom_combination(df, 'fisher', methods)
 
     # Perform CGC correction
     cgc_set = load_cgc()
@@ -212,13 +212,14 @@ def add_significant_bidders(df):
     return df
 
 
-def run(df, ranking, weights, path_fml, path_dndscv, brown=True, fisher=True):
+def run(df, ranking, weights, path_fml, path_dndscv, brown=True, fisher=True, methods=None):
+    methods = METHODS if methods is None else methods
 
     # Map with the ranking
     dg = retrieve_ranking(df, ranking)
 
     # Combine the pvalue
-    dh = combine_pvals(dg, weights, METHODS)
+    dh = combine_pvals(dg, weights, methods)
 
     # Include the excess
     di = include_excess(dh, path_dndscv)
@@ -230,7 +231,7 @@ def run(df, ranking, weights, path_fml, path_dndscv, brown=True, fisher=True):
     dk = filter_out_lowly_mutated(dj, path_fml)
 
     # Display the table with sorted columns
-    pqvals = reduce(lambda x, y: x + y, map(lambda x: ['PVALUE_' + x, 'QVALUE_' + x], METHODS))
+    pqvals = reduce(lambda x, y: x + y, map(lambda x: ['PVALUE_' + x, 'QVALUE_' + x], methods))
     column_order = ["SYMBOL"] + pqvals + ["PVALUE_stouffer_w", "QVALUE_stouffer_w", "QVALUE_CGC_stouffer_w"]
     if brown:
         column_order += list(map(lambda x: x + '_brown', ['PVALUE', 'QVALUE', 'PVALUE_trunc', 'QVALUE_trunc']))

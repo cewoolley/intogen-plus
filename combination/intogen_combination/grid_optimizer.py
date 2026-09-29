@@ -7,6 +7,7 @@ import pandas as pd
 from scipy.optimize import basinhopping
 
 from intogen_combination.config import CONF, REGIONS, METHODS
+from intogen_combination.parser import candidate_genes
 from intogen_combination.qc.deviations import Deviation
 from intogen_combination.qc.parser import Parser
 from intogen_combination.schulze_election import combination_ranking
@@ -21,17 +22,17 @@ UPPER_BOUND = 0.3
 class Filter:
 
     def __init__(self, **files):
+        self.candidates = candidate_genes(files)
         self.data = self.create_table(**files)
 
-    @staticmethod
-    def statistic_outputs(input_file, method):
+    def statistic_outputs(self, input_file, method):
         """
         Calculate some statistic on the input_file
         :param input_file: path, path of the input_file
         :param method: str, name of the method used in the analysis
         :return: dict or None if the input file is empty
         """
-        parser = Parser(method=method, gene_coordinates=REGIONS)
+        parser = Parser(method=method, gene_coordinates=REGIONS, candidates=self.candidates)
         df = parser.read(input_file)
 
         if df is None or len(df) == 0:
@@ -159,11 +160,12 @@ def all_constraints(w):
     return all((x >= LOWER_BOUND) and (x <= UPPER_BOUND) for x in w)
 
 
-def fill_with_zeros(w, low_quality_index):
+def fill_with_zeros(w, low_quality_index, methods=None):
+    methods = METHODS if methods is None else methods
 
     w_zero_filled = []
     j = 0
-    for i, m in enumerate(METHODS):
+    for i, m in enumerate(methods):
         if i in low_quality_index:
             w_zero_filled += [0.]
         else:
@@ -172,9 +174,10 @@ def fill_with_zeros(w, low_quality_index):
     return w_zero_filled
 
 
-def grid_optimize(func, low_quality=None):
+def grid_optimize(func, low_quality=None, methods=None):
     """
     :param: func: function to be optimized
+    :param: methods: methods in the combination (default: mutation-based methods)
     :return: best candidates
 
     These are the constraints that must be in place:
@@ -183,30 +186,35 @@ def grid_optimize(func, low_quality=None):
     constraint 3: w_i <= 0.3 for all w_i
 
     """
+    methods = METHODS if methods is None else methods
 
-    optimum = {k: None for k in METHODS}
+    optimum = {k: None for k in methods}
     optimum.update({'Objective_Function': 0})  # we will minimize a negative function
 
     low_quality_index = set()
     if low_quality is not None:
-        low_quality_index = [i for i, m in enumerate(METHODS) if m in low_quality]
+        low_quality_index = [i for i, m in enumerate(methods) if m in low_quality]
 
-    dim = len(METHODS) - len(low_quality_index)
-    for w in itertools.product(np.linspace(0, 1, 21), repeat=dim-1):
+    dim = len(methods) - len(low_quality_index)
+    # Only grid values satisfying constraints 2 and 3 can be part of a valid solution.
+    # Iterating over them visits the same valid points, in the same order, as iterating
+    # over the full grid, but scales to more methods (e.g. when omics are integrated)
+    grid = [x for x in np.linspace(0, 1, 21) if LOWER_BOUND <= x <= UPPER_BOUND]
+    for w in itertools.product(grid, repeat=dim-1):
         if sum(w) <= 1 - LOWER_BOUND:                        # inside the simplex
             w_dim = list(np.append(w, [1 - sum(w)]))   # consequently len(w_dim) == dim
             if all_constraints(w_dim):
-                w_all = fill_with_zeros(w_dim, low_quality_index)
+                w_all = fill_with_zeros(w_dim, low_quality_index, methods)
                 f = func(w_all)
                 if optimum['Objective_Function'] > f:  # remember we are running a minimization
                     optimum['Objective_Function'] = f
-                    for i, v in enumerate(METHODS):
+                    for i, v in enumerate(methods):
                         optimum[v] = w_all[i]
 
     return optimum
 
 
-def create_scipy_constraints(low_quality=None):
+def create_scipy_constraints(low_quality=None, methods=None):
     """
     Create the constraints for the optimization process.
     """
@@ -216,11 +224,12 @@ def create_scipy_constraints(low_quality=None):
     # constraint 2: for each weight, weight >= 0.05
     # constraint 3: for each weight, weight <= 0.3
 
+    methods = METHODS if methods is None else methods
     if low_quality is None:
         low_quality = set()
 
     cons = [{'type': 'eq', 'fun': simplex_bound}]
-    for ind, v in enumerate(METHODS):
+    for ind, v in enumerate(methods):
         if v in low_quality:
             cons += [{'type': 'eq', 'fun': partial(array_component, i=ind)}]
         else:
@@ -229,11 +238,12 @@ def create_scipy_constraints(low_quality=None):
     return tuple(cons)
 
 
-def satisfy_constraints(w, low_quality=None):
+def satisfy_constraints(w, low_quality=None, methods=None):
+    methods = METHODS if methods is None else methods
     if low_quality is None:
         low_quality = set()
     satisfy = True
-    for i, v in enumerate(METHODS):
+    for i, v in enumerate(methods):
         if v in low_quality:
             satisfy = satisfy and (abs(array_component(w, i)) < 0.01)
         else:
@@ -242,18 +252,19 @@ def satisfy_constraints(w, low_quality=None):
     return satisfy
 
 
-def optimize_with_seed(func, w0, low_quality=None):
+def optimize_with_seed(func, w0, low_quality=None, methods=None):
     """
     Args:
         func: function admitting w as argument
         w0: array: array of weights
         low_quality: list of methods for which weight shall be 0.0.
+        methods: methods in the combination (default: mutation-based methods)
     Returns:
         array of weights that minimizes function
     """
     if low_quality is None:
         low_quality = set()
-    cons = create_scipy_constraints(low_quality=low_quality)
+    cons = create_scipy_constraints(low_quality=low_quality, methods=methods)
     niter = 25
     epsilon = 0.02
     options = {'maxiter': niter, 'eps': epsilon, 'ftol': 1e-3, 'disp': True}
@@ -262,7 +273,7 @@ def optimize_with_seed(func, w0, low_quality=None):
     return res
 
 
-def full_optimizer(input_rankings, method_reject, percentage_cgc, seed, **files):
+def full_optimizer(input_rankings, method_reject, percentage_cgc, seed, methods=None, **files):
     """
     :param cancer:
     :param input_rankings:
@@ -270,8 +281,10 @@ def full_optimizer(input_rankings, method_reject, percentage_cgc, seed, **files)
     :param moutput:
     :param percentage_cgc:
     :param seed:
+    :param methods: methods in the combination (default: mutation-based methods)
     :return:
     """
+    methods = METHODS if methods is None else methods
 
     if seed == 'T':
         np.random.seed(1)
@@ -300,7 +313,7 @@ def full_optimizer(input_rankings, method_reject, percentage_cgc, seed, **files)
     print("Running on " + str(gavaliable_methods))
 
     # Set to empty those methods discarded or not present
-    for method in METHODS:
+    for method in methods:
         if method not in gavaliable_methods:
             d_results_methodsr[method] = {}
 
@@ -309,33 +322,34 @@ def full_optimizer(input_rankings, method_reject, percentage_cgc, seed, **files)
     f = partial(calculate_objective_function, d_results_methodsr, objective_function)
 
     def func(w):
-        return -f(dict(zip(METHODS, w)))
+        return -f(dict(zip(methods, w)))
 
     # best solution in 1/20 resolution grid, augmented with basin-hopping/SLSQP optimization
-    grid_optimum = grid_optimize(func, low_quality=discarded)  # get optimum candidate in the grid
-    w = np.array([grid_optimum[k] for k in METHODS])
-    res = optimize_with_seed(func, w)  # basin-hopping/SLSQP using grid optimum candidate as initial guess
-    res_dict = dict(zip(METHODS, list(res.x)))
+    grid_optimum = grid_optimize(func, low_quality=discarded, methods=methods)  # get optimum candidate in the grid
+    w = np.array([grid_optimum[k] for k in methods])
+    res = optimize_with_seed(func, w, methods=methods)  # basin-hopping/SLSQP using grid optimum candidate as initial guess
+    res_dict = dict(zip(methods, list(res.x)))
     res_dict['Objective_Function'] = res.fun
 
     # choose the best one grid or basin-hopping, unless basin-hopping does not fulfill the constraints
     if res_dict['Objective_Function'] > grid_optimum['Objective_Function']:
         out_df = pd.DataFrame({k: [v] for k, v in grid_optimum.items()})
     else:
-        r = np.array([res_dict[k] for k in METHODS])
-        if satisfy_constraints(r, low_quality=discarded):
+        r = np.array([res_dict[k] for k in methods])
+        if satisfy_constraints(r, low_quality=discarded, methods=methods):
             out_df = pd.DataFrame({k: [v] for k, v in res_dict.items()})
         else:
             out_df = pd.DataFrame({k: [v] for k, v in grid_optimum.items()})
     return out_df
 
 
-def skip_optimizer(**files):
+def skip_optimizer(methods=None, **files):
+    methods = METHODS if methods is None else methods
 
     discarded = set(["{}_r".format(m) for m in Filter(**files).filters()])
 
     # Include discarded from command line
-    gavaliable_methods = [m for m in METHODS if m not in discarded]
+    gavaliable_methods = [m for m in methods if m not in discarded]
     print("Running on " + str(gavaliable_methods))
 
     # Create a uniform vector of weights
@@ -349,10 +363,10 @@ def skip_optimizer(**files):
     return df
 
 
-def run(ranking, method_reject=None, percentage_cgc=1.0, seed=True, **files):
+def run(ranking, method_reject=None, percentage_cgc=1.0, seed=True, methods=None, **files):
     if percentage_cgc > 0.0:
-        out_df = full_optimizer(ranking, method_reject, percentage_cgc, seed, **files)
+        out_df = full_optimizer(ranking, method_reject, percentage_cgc, seed, methods=methods, **files)
     else:
-        out_df = skip_optimizer(**files)
+        out_df = skip_optimizer(methods=methods, **files)
 
     return out_df

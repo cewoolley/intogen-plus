@@ -6,19 +6,22 @@ import pandas as pd
 import numpy as np
 
 from intogen_combination.config import CONF
+from intogen_combination.parser import restrict
 
 logger = logging.getLogger(__name__)
 
 
 class Parser:
-    def __init__(self, method, gene_coordinates):
+    def __init__(self, method, gene_coordinates, candidates=None):
         """Initialize an instance of the Parser class
         :param method: str, method to parse
         :param gene_coordinates: coordinates of CDS
+        :param candidates: candidate genes of the cohort (used to restrict omics-based methods)
         :return: None
         """
         self.name = method
         self.gene_coordinates = gene_coordinates
+        self.candidates = candidates
         self.gene_id = CONF[method]["GENE_ID"]
         self.pvalue = CONF[method]["PVALUE"]
         self.qvalue = CONF[method]["QVALUE"]
@@ -42,7 +45,9 @@ class Parser:
             df = df.drop(columns=["tmp_ensid"])
 
         assert not df[self.gene_id].isna().any()
-        
+
+        df = restrict(df, self.name, self.gene_id, self.candidates)
+
         # P-value
         try:
             df = df[np.isfinite(df[self.pvalue])]

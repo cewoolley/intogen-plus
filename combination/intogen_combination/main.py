@@ -7,7 +7,7 @@ import pandas as pd
 
 from intogen_combination import parser, grid_optimizer, schulze, \
     stouffer_script, create_tiers_drivers
-from intogen_combination.config import METHODS
+from intogen_combination.config import active_methods
 
 
 def get_value(dict_values, key, position=0):
@@ -19,6 +19,10 @@ def get_value(dict_values, key, position=0):
 
 def main(outprefix='f', **files):
 
+    # Mutation-based methods plus the optional (omics-based) methods provided
+    methods = active_methods(files)
+    print("Methods in the combination: {}".format(methods))
+
     # STEP 1
     ranking, pvalues = parser.parse(**files)
 
@@ -28,13 +32,13 @@ def main(outprefix='f', **files):
     with gzip.open("{}.step1b".format(outprefix), "wt") as fd:
         writer = csv.writer(fd, delimiter='\t')
         writer.writerow(
-            ['SYMBOL'] + ["PVALUE_{}".format(h) for h in METHODS] + ["QVALUE_{}".format(h) for h in METHODS])
+            ['SYMBOL'] + ["PVALUE_{}".format(h) for h in methods] + ["QVALUE_{}".format(h) for h in methods])
         for gene, values in pvalues.items():
             writer.writerow(
-                [gene] + [get_value(values, m, 0) for m in METHODS] + [get_value(values, m, 1) for m in METHODS])
+                [gene] + [get_value(values, m, 0) for m in methods] + [get_value(values, m, 1) for m in methods])
 
     # STEP 2
-    optimized = grid_optimizer.run(ranking.copy(), **files)
+    optimized = grid_optimizer.run(ranking.copy(), methods=methods, **files)
 
     optimized.to_csv("{}.step2".format(outprefix), sep="\t", index=False, compression="gzip")
 
@@ -51,7 +55,7 @@ def main(outprefix='f', **files):
     df = stouffer_script.run(data, df, optimized,
                         files['oncodrivefml'],
                         files['dndscv'],
-                        brown=True, fisher=True)
+                        brown=True, fisher=True, methods=methods)
 
     df.to_csv("{}.stouffer.out.gz".format(outprefix), sep='\t', index=False, compression="gzip")
 
@@ -74,6 +78,8 @@ def main(outprefix='f', **files):
 @click.option('--smregions')
 @click.option('--cbase')
 @click.option('--mutpanning')
+@click.option('--methylation', help='Epigenetic silencing results (optional, integrative mode)')
+@click.option('--expression', help='Expression outliers results (optional, integrative mode)')
 @click.option('-o', '--output', required=True)
 def cli(output, **kwargs):
     main(output, **{k: v for k, v in kwargs.items() if v is not None})

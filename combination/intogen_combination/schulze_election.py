@@ -26,29 +26,26 @@ def combination_ranking(ballot_dict, weights):
             weights[voter] = 1.
         weights = dict(weights)
 
+    # A voter prefers j over i if j is in its ballot and i is either not in the ballot or ranked worse.
+    # The weight of each voter is added in the same order as looping over voters and pairs.
     for voter in ballot_dict:
         d = ballot_dict[voter]
-        for i in all_candidates:
-            if i not in d.keys():
-                for j in d:
-                    pref[all_candidates_to_idx[j]*size + all_candidates_to_idx[i]] += weights[voter]
-            else:
-                r = d[i]
-                for j in d:
-                    if d[j] < r:
-                        pref[all_candidates_to_idx[j]*size + all_candidates_to_idx[i]] += weights[voter]
+        if len(d) == 0:
+            continue
+        ranks = np.full(size, np.inf)
+        ranks[[all_candidates_to_idx[j] for j in d]] = [d[j] for j in d]
+        prefers = ranks[:, None] < ranks[None, :]  # rows: j (preferred), columns: i
+        pref += prefers.ravel() * weights[voter]
 
     # STRONGEST PATH
     strongest_path(size, pref, spath)
 
     # COMBINATION RANKING
+    s = spath.reshape(size, size)
+    scores = (s < s.T).sum(axis=1)
     scores_dict = {}
     for i in range(size):
-        score = 0
-        for j in range(size):
-            if spath[i*size + j] < spath[j*size + i]:
-                score += 1
-        scores_dict[all_candidates[i]] = score
+        scores_dict[all_candidates[i]] = int(scores[i])
     sorted_scores = sorted(scores_dict.items(), key=operator.itemgetter(1), reverse=True)
 
     ranking = {}

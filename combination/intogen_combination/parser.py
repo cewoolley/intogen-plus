@@ -1,10 +1,41 @@
 import os
 from collections import defaultdict
-from typing import Dict, Any
+from typing import Dict, Any, Optional, Set
 
+import numpy as np
 import pandas as pd
 
-from intogen_combination.config import CONF
+from intogen_combination.config import CONF, RESTRICTED_METHODS
+
+
+def candidate_genes(files: Dict[str, str]) -> Optional[Set[str]]:
+    """
+    Candidate genes of the cohort: genes with at least two mutated samples,
+    i.e. those with an OncodriveFML q-value. These are the only genes that get
+    a combined q-value (see stouffer_script.partial_correction).
+
+    :param files: Dictionary of method names and corresponding file paths
+    :return: set of gene symbols or None if OncodriveFML results are not available
+    """
+    path = files.get('oncodrivefml')
+    if path is None or not os.path.exists(path):
+        return None
+    df = pd.read_csv(path, sep="\t")
+    if df.shape[0] == 0:
+        return set()
+    c_gene, c_qvalue = CONF['oncodrivefml']['GENE_ID'], CONF['oncodrivefml']['QVALUE']
+    df = df[np.isfinite(df[c_qvalue]) & df[c_gene].notna()]
+    return set(df[c_gene].values)
+
+
+def restrict(df: pd.DataFrame, method: str, gene_column: str, candidates: Optional[Set[str]]) -> pd.DataFrame:
+    """
+    Restrict the results of the methods configured with RESTRICT_TO_CANDIDATES
+    (omics-based methods) to the candidate genes of the cohort.
+    """
+    if candidates is None or method not in RESTRICTED_METHODS:
+        return df
+    return df[df[gene_column].isin(candidates)]
 
 
 def set_ranking_genes(df_query: pd.DataFrame, q_column: str) -> pd.DataFrame:
@@ -55,6 +86,8 @@ def parse(number_top: int = 40, strict: bool = True, **files: Any) -> tuple:
     d = {}
     pvalues = defaultdict(dict)
 
+    candidates = candidate_genes(files) if any(m in RESTRICTED_METHODS for m in files) else None
+
     for method, file in files.items():
         c_gene, c_pvalue, c_qvalue, c_ensid = (
             CONF[method]["GENE_ID"],
@@ -65,6 +98,7 @@ def parse(number_top: int = 40, strict: bool = True, **files: Any) -> tuple:
 
         if os.path.exists(file):
             df = pd.read_csv(file, sep="\t")
+            df = restrict(df, method, c_gene, candidates)
 
             if df.shape[0] > 0:
                 # Use Ensembl ID if no gene-name where applicable

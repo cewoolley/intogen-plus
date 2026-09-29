@@ -24,3 +24,14 @@ Support
 
 If you are having issues, please let us know.
 You can contact us at: bbglab@irbbarcelona.org
+
+
+Tests
+-----
+
+The Cython extension must be built first:
+
+.. code:: bash
+
+   python setup.py build_ext --inplace
+   python -m pytest tests

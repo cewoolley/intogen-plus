@@ -25,13 +25,13 @@ def impute(pvals):
     return pvals
 
 
-def distance_matrix(df, metric='correlation'):
+def distance_matrix(df, metric='correlation', methods=None):
     """
     df has columns of the form 'PVALUE_<method>'
     returns the matrix of distance between methods
     """
 
-    methods_list = METHODS
+    methods_list = METHODS if methods is None else methods
     x = df[['PVALUE_' + m for m in methods_list]].values
     x = impute(x)
     Y = pdist(x.T, metric=metric)
@@ -57,16 +57,18 @@ def brown(pvalues, var=None):
     return 1 - chi2.cdf(psi / c, 2 * f)
 
 
-def custom_combination(df, comb):
+def custom_combination(df, comb, methods=None):
     """
     :param df: summary table with results of all the methods
     :param comb: combination method: 'fisher' or 'brown'
+    :param methods: methods in the combination (default: mutation-based methods)
     :return summary table with new combination columns
     Remark: KIRC data returned good clustering of driver discovery methods
     """
 
-    pval_cols = list(map(lambda x: '_'.join(['PVALUE', x]), METHODS))
-    D = distance_matrix(df[pval_cols])
+    methods = METHODS if methods is None else methods
+    pval_cols = list(map(lambda x: '_'.join(['PVALUE', x]), methods))
+    D = distance_matrix(df[pval_cols], methods=methods)
 
     # compute parameters to feed Brown's method
     k = len(pval_cols)
@@ -80,8 +82,8 @@ def custom_combination(df, comb):
 
     g = globals()  # required to get functions by name from the global namespace
 
-    df['PVALUE_' + comb] = df[['PVALUE_' + m for m in METHODS]].apply(lambda x: g[comb](impute(x), var=var), axis=1)
-    df['PVALUE_trunc_' + comb] = df[['PVALUE_' + m for m in METHODS]].apply(lambda x: g[comb](trunc(impute(x)), var=var), axis=1)
+    df['PVALUE_' + comb] = df[pval_cols].apply(lambda x: g[comb](impute(x), var=var), axis=1)
+    df['PVALUE_trunc_' + comb] = df[pval_cols].apply(lambda x: g[comb](trunc(impute(x)), var=var), axis=1)
     df['QVALUE_' + comb] = multipletests(df['PVALUE_' + comb].values, method='fdr_bh')[1]
     df['QVALUE_trunc_' + comb] = multipletests(df['PVALUE_trunc_' + comb].values, method='fdr_bh')[1]
     return df
