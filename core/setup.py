@@ -40,7 +40,13 @@ setup(
                 'mutations-summary = intogen_core.postprocess.mutations:cli',
                 'drivers-discovery = intogen_core.postprocess.drivers.discovery:cli',
                 'drivers-summary = intogen_core.postprocess.drivers.summary:cli',
-                'drivers-saturation = intogen_core.postprocess.drivers.saturation:cli'
+                'drivers-saturation = intogen_core.postprocess.drivers.saturation:cli',
+                'parse-methylation = intogen_core.omics.methylation:parse_cli',
+                'methylation-analysis = intogen_core.omics.methylation:analysis_cli',
+                'parse-expression = intogen_core.omics.expression:parse_cli',
+                'expression-analysis = intogen_core.omics.expression:analysis_cli',
+                'omics-features = intogen_core.omics.features:cli',
+                'omics-summary = intogen_core.omics.features:summary_cli'
             ]
         },
 )

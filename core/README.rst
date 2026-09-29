@@ -24,3 +24,14 @@ Support
 
 If you are having issues, please let us know.
 You can contact us at: bbglab@irbbarcelona.org
+
+
+Tests
+-----
+
+The tests of the omics layers and of the driver post-processing
+need ``pytest``:
+
+.. code:: bash
+
+   python -m pytest tests

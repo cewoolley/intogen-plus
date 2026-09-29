@@ -1,8 +1,10 @@
 bgdata
 bgparsers
 bgreference
+click
 intervaltree
 numpy
-pandas
+pandas<3
 pyliftover
 pytabix
+scipy

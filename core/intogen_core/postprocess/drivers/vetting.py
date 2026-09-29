@@ -5,12 +5,16 @@ import pandas as pd
 
 from intogen_core.exceptions import IntogenError
 from intogen_core.postprocess.drivers.bw_list import read_file
+from intogen_core.postprocess.drivers.omics import has_mutational_bidder
 
 
 def get_drivers(row):
     if row["TIER"] <= 3 and row["CGC_GENE"]:     # Tier 1 and tier 2 if cgc no bidders needed
         return True
-    elif (len(str(row["Significant_Bidders"]).split(",")) > 1) and row["TIER"] <= 3 :     # Tier 1 if not cgc one bidder, #len(str(row["Significant_Bidders"]).split(",")) > 1str(row["Significant_Bidders"]) != "nan"
+    # Non CGC genes need at least 2 significant bidders, one of them based on mutations
+    # (omics-based methods can be bidders when they are integrated in the combination)
+    elif (len(str(row["Significant_Bidders"]).split(",")) > 1) and has_mutational_bidder(row["Significant_Bidders"]) \
+            and row["TIER"] <= 3 :     # Tier 1 if not cgc one bidder, #len(str(row["Significant_Bidders"]).split(",")) > 1str(row["Significant_Bidders"]) != "nan"
         return True
     else:
         return False
@@ -89,9 +93,11 @@ def vet(df_vetting, combination, ctype):
 
         # Perform the vetting
         df_vetting.rename(columns={"GENE": "SYMBOL"}, inplace=True)
-        df_drivers_vetting = pd.merge(df_drivers, df_vetting[
-            ["SNV", "INDEL", "INDEL/SNV", "Signature10", "Signature9", "Warning_Expression", "Warning_Germline",
-             "SYMBOL", "Samples_3muts", "OR_Warning", "Warning_Artifact", "Known_Artifact", "n_papers"]].drop_duplicates(), how="left")
+        vetting_columns = ["SNV", "INDEL", "INDEL/SNV", "Signature10", "Signature9", "Warning_Expression", "Warning_Germline",
+             "SYMBOL", "Samples_3muts", "OR_Warning", "Warning_Artifact", "Known_Artifact", "n_papers"]
+        if "Warning_Expression_Source" in df_vetting.columns:  # cohort expression available
+            vetting_columns.append("Warning_Expression_Source")
+        df_drivers_vetting = pd.merge(df_drivers, df_vetting[vetting_columns].drop_duplicates(), how="left")
         df_drivers_vetting["DRIVER"].fillna(False, inplace=True)
         df_drivers_vetting["Warning_Expression"].fillna(False, inplace=True)
         df_drivers_vetting["Warning_Germline"].fillna(False, inplace=True)

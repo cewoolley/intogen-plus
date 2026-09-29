@@ -4,6 +4,8 @@ import click
 import numpy as np
 import pandas as pd
 
+from intogen_core.postprocess.drivers.omics import OMICS_DRIVERS_COLUMNS, OMICS_VET_COLUMNS, OMICS_BOOLEAN_COLUMNS
+
 
 def load_cohorts(cohorts):
     df = pd.read_csv(cohorts, sep='\t')
@@ -25,7 +27,7 @@ def run(mutations, cohorts, files, vet_files):
     l = []
     lv = []
     for file, vet in zip(files, vet_files):
-        df = pd.read_csv(file, sep="\t")
+        df = pd.read_csv(file, sep="\t", dtype=OMICS_BOOLEAN_COLUMNS)
         df_vet = pd.read_csv(vet, sep="\t")
         df_vet["COHORT"] = '' if df_vet.empty else vet.split('.')[0] # get cohort name from filename
 
@@ -53,6 +55,8 @@ def run(mutations, cohorts, files, vet_files):
                "QVALUE_COMBINATION", "ROLE", "CGC_GENE", "CGC_CANCER_GENE",
                "DOMAIN", "2D_CLUSTERS", "3D_CLUSTERS",
                "EXCESS_MIS", "EXCESS_NON", "EXCESS_SPL"]
+    # omics features (only present if some cohort has methylation or expression data)
+    columns += [c for c in OMICS_DRIVERS_COLUMNS if c in df.columns]
 
     df[columns].sort_values(["SYMBOL", "CANCER_TYPE"]).to_csv('drivers.tsv', sep="\t", index=False)
 
@@ -66,6 +70,7 @@ def run(mutations, cohorts, files, vet_files):
                "TIER_CGC", "CGC_CANCER_GENE", "SIGNATURE9", "SIGNATURE10", "WARNING_EXPRESSION", 
                "WARNING_GERMLINE", "SAMPLES_3MUTS", "OR_WARNING", "WARNING_ARTIFACT", 
                "KNOWN_ARTIFACT", "NUM_PAPERS", "WARNING_ENSEMBL_TRANSCRIPTS", "DRIVER", "FILTER"]
+    columns += [c for c in OMICS_VET_COLUMNS if c in df_vet.columns]
 
     df_vet[columns].sort_values(["SYMBOL", "CANCER_TYPE"]).to_csv('unfiltered_drivers.tsv', sep="\t", index=False)
 

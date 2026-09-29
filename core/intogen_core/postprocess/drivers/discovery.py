@@ -2,6 +2,7 @@ import json
 import os
 
 import click
+import numpy as np
 import pandas as pd
 
 from intogen_core.exceptions import IntogenError
@@ -11,6 +12,8 @@ from intogen_core.postprocess.drivers.data import significative_domains, \
     clusters_2D, clusters_3D, excess
 from intogen_core.postprocess.drivers.filters import filter_samples_by_nmuts, \
     filter_by_expression, filter_by_polymorphism, filter_by_olfactory_receptors
+from intogen_core.postprocess.drivers.omics import OMICS_DRIVERS_COLUMNS, OMICS_VET_COLUMNS, \
+    load_omics, apply_cohort_expression
 from intogen_core.postprocess.drivers.role import role
 from intogen_core.postprocess.drivers.signature import analysis_signatures_gene
 from intogen_core.postprocess.drivers.vetting import vet
@@ -67,7 +70,12 @@ def read_file(filein):
 def run(combination, mutations, sig_likelihood,
         cohort, ctype,
         smregions, clustl_clusters, hotmaps, dndscv,
-            output_drivers, output_vet, muts=3):
+            output_drivers, output_vet, muts=3, omics=None):
+
+    # Omics features of the cohort (methylation and/or expression), if available
+    df_omics = load_omics(omics)
+    vet_columns = VET_COLUMNS if df_omics is None else VET_COLUMNS + OMICS_VET_COLUMNS
+    drivers_columns = DRIVERS_COLUMNS if df_omics is None else DRIVERS_COLUMNS + OMICS_DRIVERS_COLUMNS
 
     df = pd.read_csv(mutations, sep="\t")
 
@@ -92,6 +100,10 @@ def run(combination, mutations, sig_likelihood,
     # 5. Add expression info
     print('5. Add expression info')
     df = filter_by_expression(df, ctype)
+    if df_omics is not None:
+        # the expression of the cohort replaces TCGA for the genes it measures
+        print('5b. Add cohort expression info')
+        df = apply_cohort_expression(df, df_omics)
 
     # 6. Add Polymorphism info
     print('6. Add Polymorphism info')
@@ -128,10 +140,10 @@ def run(combination, mutations, sig_likelihood,
         # df.to_csv(output, sep="\t", index=False)
         # return
     if len(df) == 0:
-        vetting_df = pd.DataFrame(columns = VET_COLUMNS)
+        vetting_df = pd.DataFrame(columns = vet_columns)
         vetting_df.to_csv(output_vet, sep="\t", index=False)
         
-        drivers_df = pd.DataFrame(columns = DRIVERS_COLUMNS)
+        drivers_df = pd.DataFrame(columns = drivers_columns)
         drivers_df.to_csv(output_drivers, sep="\t", index=False)       
 
     else:
@@ -166,7 +178,11 @@ def run(combination, mutations, sig_likelihood,
         print('13. Checkpoint: save file with vetting info')
         
         df['SIG_METHODS'].fillna('combination', inplace=True)
-        df[VET_COLUMNS].sort_values(["SYMBOL"]).to_csv(output_vet, sep="\t", index=False)
+        if df_omics is not None:
+            df = df.merge(df_omics[['SYMBOL', 'QVALUE_METHYLATION', 'QVALUE_EXPRESSION']], on='SYMBOL', how='left')
+            if 'WARNING_EXPRESSION_SOURCE' not in df.columns:
+                df['WARNING_EXPRESSION_SOURCE'] = np.nan
+        df[vet_columns].sort_values(["SYMBOL"]).to_csv(output_vet, sep="\t", index=False)
 
         # 14. Filter drivers
 
@@ -190,10 +206,16 @@ def run(combination, mutations, sig_likelihood,
 
         for df in dfs:  # expected sig. domains, 2D clusters, 3D clusters and excess
             df_drivers = df_drivers.merge(df, how='left')
+
+        # 16. Add omics features
+        if df_omics is not None:
+            print('16. Add omics features')
+            df_drivers = df_drivers.merge(df_omics[['SYMBOL'] + OMICS_DRIVERS_COLUMNS], on='SYMBOL', how='left')
+
         # Compute % of samples per cohort
         df_drivers["COHORT"] = cohort
 
-        df_drivers[DRIVERS_COLUMNS].sort_values(["SYMBOL"]).to_csv(output_drivers, sep="\t", index=False)
+        df_drivers[drivers_columns].sort_values(["SYMBOL"]).to_csv(output_drivers, sep="\t", index=False)
         # FIXME TRANSCRIPT
 
 
@@ -209,6 +231,8 @@ def run(combination, mutations, sig_likelihood,
 @click.option('--cohort', type=str, required=True)
 @click.option('--output_drivers', type=click.Path(), required=True)
 @click.option('--output_vet', type=click.Path(), required=True)
+@click.option('--omics', type=click.Path(exists=True), default=None,
+              help='Omics features of the cohort (omics-features output)')
 def cli(**kwargs):
     run(**kwargs)
 
