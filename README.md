@@ -38,6 +38,24 @@ nextflow run intogen.nf -resume -profile local --input test/ --output ./output
 
 For further details, please check our documentation: http://intogen-plus.rtfd.io/
 
+#### DNA methylation and RNA-seq (optional)
+
+DNA methylation (array beta values, M-values or gene-level promoter methylation)
+and RNA-seq (counts, TPM/FPKM or log values) of the same tumours can be added.
+Files are assigned to cohorts by name (`<COHORT>.<anything>`):
+
+```bash
+nextflow run intogen.nf -resume -profile local --input test/ --output ./output \
+    --methylation "omics/*.beta.tsv.gz" --expression "omics/*.counts.tsv.gz" \
+    --omics_samples omics/samples.tsv   # optional: sample IDs and normal samples
+```
+
+They are used to detect epigenetic silencing and expression outliers, to flag
+genes not expressed in the cohort (instead of using TCGA as a proxy) and to annotate
+the drivers (`omics.tsv` and extra columns in `drivers.tsv`).
+With `--integrate_omics true` this evidence is also added to the combination
+of driver identification methods. See `docs/source/omics.rst`.
+
 [comment]: <> (FIXME add example in test)
 
 To avoid stopping the pipeline execution for one or a few incorrect

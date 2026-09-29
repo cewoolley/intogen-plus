@@ -17,4 +17,5 @@ Welcome to IntOGen's documentation
    postprocessing
    boostdm_connection
    mutational_features
+   omics
    usage

@@ -41,6 +41,20 @@ There are a number of parameters and options that can be added:
 
 --debug <bool>    Ask methods for a more verbose output if set to True.
 
+--methylation <files>   Optional DNA methylation matrices of the cohorts. See :doc:`omics`.
+
+--expression <files>   Optional RNA-seq matrices of the cohorts. See :doc:`omics`.
+
+--omics_samples <file>   Optional sample sheet of the methylation and RNA-seq matrices.
+
+--methylation_values <type>   Type of methylation values: ``auto`` (default), ``beta``, ``m`` or ``percent``.
+
+--methylation_probes <file>   Promoter probes of the methylation arrays. Default: :file:`<datasets>/methylation/promoter_probes.tsv.gz`.
+
+--expression_units <units>   Units of the RNA-seq matrices: ``auto`` (default), ``counts``, ``tpm``, ``fpkm`` or ``log2``.
+
+--integrate_omics <bool>   Add the methylation and expression evidence to the combination of driver identification methods. Default: ``false``.
+
 
 Input & output
 ^^^^^^^^^^^^^^
@@ -77,6 +91,11 @@ Whether you are planning to run single or multiple cohorts, you would
 need to provide an annotation file in yaml format to specify the above mentioned structure required by IntOGen. 
 Instructions on how to build an annotation file are documented here: `OpenVariant annotation file <https://openvariant.readthedocs.io/en/latest/user_guide/annotation_structure.html>`__ .
 
+Optionally, DNA methylation and RNA-seq data of the cohorts can be provided
+(``--methylation`` and ``--expression``). Each file must be named after the
+cohort ID followed by a dot (e.g. :file:`TCGA_WXS_BRCA.beta.tsv.gz`).
+See :doc:`omics` for the accepted formats.
+
 
 Output
 ******
@@ -88,6 +107,10 @@ By default this pipeline outputs 4 files:
 - :file:`mutations.tsv`: summary of all the mutations analyzed by cohort
 - :file:`unique_drivers.tsv`: information on the genes reported as drivers (in any cohort)
 - :file:`unfiltered_drivers.tsv`: information on the filters applied to the post-processing step: from the output of the combination to the final set of driver genes.
+- :file:`omics.tsv`: only when methylation or RNA-seq data are provided. Genes with
+  significant epigenetic silencing or expression outliers in any cohort.
+  In addition, omics features are added to :file:`drivers.tsv` and
+  :file:`unfiltered_drivers.tsv` (see :doc:`omics`).
 
 Those files can be found in the path indicated with the
 ``--output`` options.

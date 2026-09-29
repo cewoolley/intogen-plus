@@ -27,6 +27,11 @@ Currently there are several environment variables that can be defined:
 - ``ensembl``: specifies the ensembl version
 - ``cadd``: specifies the CADD version (used for OncodriveFML)
 - ``cores``: amount of cores to use by processes that can be parallelized
+- ``methylation_arrays``: methylation arrays whose probes are annotated
+  (default: ``HM450 EPIC EPICv2``)
+- ``methylation_gencode``: GENCODE version of the array annotations (default: ``v41``)
+- ``methylation_promoter_upstream`` and ``methylation_promoter_downstream``:
+  promoter window around the TSS of the MANE transcripts (default: 1500 and 500 bp)
 
 .. important:: Not all versions of ``ensembl`` and ``cadd``
    might work. At least, they need to be compatible with the working reference
@@ -50,6 +55,13 @@ The process can be significantly faster and less error prone
 if you download it first and replace the ``CADD_URL`` variable
 in ``datasets/oncodriverfml/fml.mk`` with the full path where
 you have downloaded the CADD scores.
+
+The promoter probes used to analyse DNA methylation arrays
+(``methylation/promoter_probes.tsv.gz``) are built from the
+array annotations of Zhou et al.
+(`InfiniumAnnotation <https://zwdzwd.github.io/InfiniumAnnotation>`_),
+which are downloaded from GitHub. Probes flagged by their general
+quality mask are discarded.
 
 Less important notes
 ********************

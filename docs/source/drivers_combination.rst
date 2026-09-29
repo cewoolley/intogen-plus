@@ -106,6 +106,18 @@ q-value using only the collection of p-values computed for CGC genes.
 Otherwise, we computed the q-value using all the computed p-values.
 
 
+Omics-based methods
+^^^^^^^^^^^^^^^^^^^
+
+When DNA methylation or RNA-seq data are provided and the integrative mode is
+enabled (``--integrate_omics true``), the epigenetic silencing and the
+expression outliers tests (see :doc:`omics`) take part in the combination as
+two additional methods, with their own voting rights and Stouffer weights
+estimated as described above. Their rankings and p-values are restricted to the
+candidate genes of the mutational analysis (genes with at least two mutated
+samples), so they can only prioritise mutated genes. Non-CGC genes also require
+a significant mutation-based method to be reported as drivers.
+
 Tiers of driver genes from sorted list of combined rankings and p-values
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
