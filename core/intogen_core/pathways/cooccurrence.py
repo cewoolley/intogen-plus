@@ -3,7 +3,8 @@ Co-occurrence of dysregulation events in the same tumours.
 
 Events are alterations of a gene or of a gene set in a layer:
 
-- ``mutation``: non-synonymous mutations
+- ``mutation``: mutations that alter the protein (including indels)
+- ``mutation_missense`` / ``mutation_truncating``: missense or truncating mutations
 - ``silencing``: promoter hypermethylation with loss of expression
 - ``expression_over`` / ``expression_under``: expression outliers
 
@@ -20,8 +21,9 @@ genes) happens in a tumour is ``1 - prod(1 - p_gs)``. Under independence, the
 number of tumours with both events follows a Poisson-binomial distribution
 with parameters ``q1_s * q2_s``, which gives the co-occurrence p-value.
 
-Within a layer, the genes shared by two events are removed from both, so that
-overlapping gene sets do not co-occur trivially. The same applies to expression
+Within a layer (the mutation layers count as one), the genes shared by two
+events are removed from both, so that overlapping gene sets do not co-occur
+trivially. The same applies to expression
 events and events of other layers, since expression changes can be a direct
 consequence of the silencing or mutation of the same gene. Mutations and
 silencing of the same gene (two hits) are tested.
@@ -140,6 +142,11 @@ class Event:
         self.significance = significance
 
 
+def family(layer):
+    """Layers with the same alterations (all the mutation layers are mutations)"""
+    return 'mutation' if layer.startswith('mutation') else layer
+
+
 def overlap_removed(layer1, layer2):
     """
     Whether the genes shared by two events must be removed before testing them.
@@ -148,7 +155,7 @@ def overlap_removed(layer1, layer2):
     mutations), so expression events do not count the genes of the other event.
     A mutation and the silencing of the same gene (two hits) are kept.
     """
-    return layer1 == layer2 or layer1.startswith('expression') or layer2.startswith('expression')
+    return family(layer1) == family(layer2) or layer1.startswith('expression') or layer2.startswith('expression')
 
 
 def test_pairs(events, layers, min_tumours=3):

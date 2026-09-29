@@ -13,8 +13,10 @@ outliers) two scopes are tested:
   drivers, through genes that are rarely altered individually.
 
 The layers of a set are combined with Fisher's method (``combined``): the
-mutations, the epigenetic silencing and the expression outliers (the most
-significant direction, Bonferroni corrected).
+mutations (the most significant of all non-synonymous, missense and truncating
+mutations, combined with Simes' method), the epigenetic silencing and the
+expression outliers (the most significant direction, Bonferroni corrected).
+Without omics data, the combination only reflects the mutations.
 
 Then, the co-occurrence in the same tumours of the drivers, the
 individually significant omics genes and the significant long tails of the
@@ -28,11 +30,12 @@ import numpy as np
 import pandas as pd
 
 from intogen_core.omics import io
-from intogen_core.omics.features import SYNONYMOUS, TRUNCATING, read_mutations
-from intogen_core.omics.stats import fdr_bh, fisher_combine
+from intogen_core.omics.features import TRUNCATING, read_mutations
+from intogen_core.omics.stats import fdr_bh, fisher_combine, simes_combine
 from intogen_core.pathways import cooccurrence
 from intogen_core.pathways.genesets import GeneSets, read_gene_sets
-from intogen_core.pathways.selection import MUTATION_LAYERS, MutationLayer, expression_layers, silencing_layer
+from intogen_core.pathways.selection import (MUTATION_LAYERS, MutationLayer, estimate_theta, expression_layers,
+                                             silencing_layer)
 
 
 SCOPES = ['all', 'long_tail']
@@ -40,10 +43,11 @@ SCOPES = ['all', 'long_tail']
 RESULT_COLUMNS = ['SET', 'SOURCE', 'NAME', 'SCOPE', 'LAYER', 'N_GENES', 'N_GENES_EXCLUDED', 'N_GENES_ALTERED',
                   'OBSERVED', 'EXPECTED', 'RATIO', 'TUMOURS', 'P_VALUE', 'Q_VALUE', 'TOP_GENES']
 
-# layer whose tumour alterations are used for co-occurrence, per tested layer
-EVENT_LAYER = {'mutation': 'mutation', 'mutation_missense': 'mutation', 'mutation_truncating': 'mutation',
-               'silencing': 'silencing', 'expression_over': 'expression_over',
-               'expression_under': 'expression_under'}
+# consequences that alter the protein (high and moderate impact in VEP)
+PROTEIN_AFFECTING = {'missense_variant', 'stop_gained', 'stop_lost', 'start_lost', 'initiator_codon_variant',
+                     'frameshift_variant', 'inframe_insertion', 'inframe_deletion', 'protein_altering_variant',
+                     'splice_donor_variant', 'splice_acceptor_variant', 'transcript_ablation',
+                     'feature_truncation', 'feature_elongation', 'transcript_amplification'}
 
 
 def read_vet(path):
@@ -60,14 +64,14 @@ def read_vet(path):
 
 
 def mutation_hits(mutations_file):
-    """Tumours and altered genes per mutation layer"""
+    """Tumours and altered genes per mutation layer (mutations that alter the protein, including indels)"""
     muts = read_mutations(mutations_file)
     tumours = sorted(muts['SAMPLE'].unique())
-    nonsyn = muts[~muts['Consequence'].isin(SYNONYMOUS)]
+    affecting = muts[muts['Consequence'].isin(PROTEIN_AFFECTING)]
     return tumours, {
-        'mutation': nonsyn,
-        'mutation_missense': nonsyn[nonsyn['Consequence'] == 'missense_variant'],
-        'mutation_truncating': nonsyn[nonsyn['Consequence'].isin(TRUNCATING)],
+        'mutation': affecting,
+        'mutation_missense': affecting[affecting['Consequence'] == 'missense_variant'],
+        'mutation_truncating': affecting[affecting['Consequence'].isin(TRUNCATING)],
     }
 
 
@@ -109,6 +113,8 @@ def load_layers(genemuts, mutations, vet, methylation=None, methylation_events=N
             hits[name] = cooccurrence.Layer(name, mutated[name][['SYMBOL', 'SAMPLE']], tumours)
         stats['mutation_method'] = layer.method
         stats['mutation_theta'] = layer.theta
+        if layer.method == 'nb':
+            stats['mutation_theta_mle'] = estimate_theta(genemuts['n_syn'].values, genemuts['exp_syn_cv'].values)
     else:
         stats['warning_mutations'] = 'No dNdScv results: mutations not tested'
     stats['tumours_mutations'] = len(tumours)
@@ -147,9 +153,10 @@ def test_sets(gene_sets, tests, hits):
                 rows.append(info + [scope, name, r['N_GENES'], len(excluded), r['N_GENES_ALTERED'],
                                     r['OBSERVED'], r['EXPECTED'], r['RATIO'], hits[name].altered_tumours(selected),
                                     r['P_VALUE'], np.nan, top_genes(layer, selected)])
+            mutation = simes_combine([pvalues.get(name, np.nan) for name in MUTATION_LAYERS])
             expression = [pvalues.get(f'expression_{d}', np.nan) for d in ['over', 'under']]
             expression = min(1.0, 2 * np.nanmin(expression)) if np.isfinite(expression).any() else np.nan
-            combined = fisher_combine([pvalues.get('mutation', np.nan), pvalues.get('silencing', np.nan), expression])
+            combined = fisher_combine([mutation, pvalues.get('silencing', np.nan), expression])
             rows.append(info + [scope, 'combined', len(genes), np.nan, np.nan, np.nan, np.nan, np.nan, np.nan,
                                 combined, np.nan, ''])
 
@@ -170,17 +177,17 @@ def candidate_events(results, gene_sets, tests, drivers, threshold):
             for gene in significant:
                 candidates.append(cooccurrence.Event(name, 'gene', gene, gene, [gene], 0.0))
 
+    # a gene set is an event in the layer where its long tail is most significant, with the
+    # alterations of that layer (e.g. truncating mutations for gene sets selected through them)
     long_tail = results[(results['SCOPE'] == 'long_tail') & (results['LAYER'] != 'combined') &
                         (results['Q_VALUE'] < threshold)]
     best = {}
-    for _, row in long_tail.iterrows():
-        key = (row['SET'], EVENT_LAYER[row['LAYER']])
-        if key not in best or row['Q_VALUE'] < best[key]['Q_VALUE']:
-            best[key] = row
-    for (set_id, layer_name), row in best.items():
+    for _, row in long_tail.sort_values(['Q_VALUE', 'P_VALUE', 'LAYER']).iterrows():
+        best.setdefault((row['SET'], cooccurrence.family(row['LAYER'])), row)
+    for (set_id, _), row in sorted(best.items()):
         layer, significant = tests[row['LAYER']]
         genes = (gene_sets.genes[set_id] - significant) & layer.universe
-        candidates.append(cooccurrence.Event(layer_name, 'pathway', set_id, row['NAME'], genes, row['Q_VALUE']))
+        candidates.append(cooccurrence.Event(row['LAYER'], 'pathway', set_id, row['NAME'], genes, row['Q_VALUE']))
     return candidates
 
 
@@ -226,8 +233,7 @@ def run(genemuts, mutations, vet, gene_sets, output, cooccurrence_output, genes_
     io.write_table(results, output)
 
     candidates = candidate_events(results, sets, tests, drivers, threshold) if len(results) else []
-    event_layers = {name: hits[name] for name in set(EVENT_LAYER.values()) if name in hits}
-    pairs, events = cooccurrence.run(candidates, event_layers, max_events=max_events, min_tumours=min_tumours,
+    pairs, events = cooccurrence.run(candidates, hits, max_events=max_events, min_tumours=min_tumours,
                                      threshold=threshold)
     io.write_table(pairs, cooccurrence_output)
     io.write_table(pathways_by_gene(results, sets, pairs, events, threshold), genes_output)

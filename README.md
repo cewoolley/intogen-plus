@@ -61,10 +61,11 @@ of driver identification methods. See `docs/source/omics.rst`.
 With `--pathways true`, IntOGen also tests whether gene sets (Reactome pathways and
 MSigDB hallmarks, or custom ones with `--gene_sets`) are under selection beyond their
 individually significant genes (the *long tail* of rarely altered genes), in the mutations
-and, when provided, in the epigenetic silencing and expression outliers. Then it finds
-drivers, silenced or dysregulated genes and pathways that are altered together in the same
-tumours more often than expected, and groups them into modules
-(`pathways.tsv`, `pathway_cooccurrence.tsv` and `pathway_modules.tsv`).
+(all, missense or truncating) and, when provided, in the epigenetic silencing and
+expression outliers. Then it finds drivers, silenced or dysregulated genes and pathways
+that are altered together in the same tumours more often than expected, and groups them
+into modules (`pathways.tsv`, `pathway_cooccurrence.tsv` and `pathway_modules.tsv`).
+Sequencing data alone are enough: the omics layers are added when available.
 See `docs/source/pathways.rst`.
 
 [comment]: <> (FIXME add example in test)

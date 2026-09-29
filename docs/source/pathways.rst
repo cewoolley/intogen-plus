@@ -27,13 +27,19 @@ driver is added to :file:`drivers.tsv`.
 
 .. code-block:: bash
 
+      nextflow run intogen.nf --input <input> --pathways true
+
+The analysis only requires the somatic mutations: from sequencing data alone,
+it finds gene sets under selection through missense or truncating mutations
+and the networks of drivers and gene sets mutated together in the same
+tumours. Methylation and RNA-seq data of the cohorts, when provided, add the
+epigenetic silencing and expression layers (see :doc:`omics`):
+
+.. code-block:: bash
+
       nextflow run intogen.nf --input <input> --pathways true \
             --methylation "omics/*.beta.tsv.gz" \
             --expression "omics/*.counts.tsv.gz"
-
-The mutation layers are always analysed. The epigenetic silencing and
-expression layers are added when methylation and RNA-seq data of the cohort
-are provided (see :doc:`omics`).
 
 
 Gene sets
@@ -66,14 +72,14 @@ Layers of alteration
      - Alterations
      - Data
    * - mutation
-     - Non-synonymous substitutions (missense, nonsense and essential splice site)
-     - dNdScv
+     - Mutations that alter the protein
+     - Mutations (selection: dNdScv)
    * - mutation_missense
-     - Missense substitutions
-     - dNdScv
+     - Missense mutations
+     - Mutations (selection: dNdScv)
    * - mutation_truncating
-     - Nonsense and essential splice site substitutions
-     - dNdScv
+     - Nonsense, frameshift and essential splice site mutations
+     - Mutations (selection: dNdScv)
    * - silencing
      - Promoter hypermethylation, excluding genes whose hypermethylation is not
        associated with lower expression
@@ -81,6 +87,11 @@ Layers of alteration
    * - expression_over / expression_under
      - Expression outliers
      - RNA-seq (see :doc:`omics`)
+
+The selection of the mutation layers is tested with the substitutions analysed
+by dNdScv (missense, nonsense and essential splice site). The co-occurrence
+analyses use all the mutations that alter the protein (VEP consequences of high
+and moderate impact, including indels).
 
 
 Selection of gene sets
@@ -92,7 +103,10 @@ non-synonymous substitutions expected under neutrality given the mutational
 profile of the cohort, the sequence of the gene and its local mutation rate,
 which is predicted from genomic covariates with gamma-distributed variation
 (overdispersion :math:`\theta`, estimated from the synonymous mutations of
-all genes). Updated with the synonymous mutations observed in each gene, the
+all genes). Since sets aggregate many genes, their tests are sensitive to
+errors in :math:`\theta`: the lower bound of its 95% profile likelihood
+confidence interval is used, which makes the tests conservative when few genes
+are analysed and is close to the estimate for a whole exome. Updated with the synonymous mutations observed in each gene, the
 number of non-synonymous mutations of a gene under neutrality follows a
 negative binomial distribution. The number of non-synonymous mutations of the
 set is compared with the exact distribution of the sum of these negative
@@ -118,9 +132,14 @@ omics layers, the genes with q-value < 0.1. A significant long tail means that
 the set is under selection beyond its known drivers, through genes that are
 rarely altered individually.
 
-**Combination.** The mutation, silencing and expression (the most significant
-direction, Bonferroni corrected) p-values of a set are combined with Fisher's
-method (``combined`` layer).
+**Combination.** The mutation p-values of a set (``mutation``,
+``mutation_missense`` and ``mutation_truncating``) are combined with Simes'
+method, so that sets selected through a single type of mutation (e.g. truncating
+mutations of tumour suppressors) are not diluted by the passenger mutations of
+the other types. Then, the mutation, silencing and expression (the most
+significant direction, Bonferroni corrected) p-values are combined with
+Fisher's method (``combined`` layer). Without omics data, the combination only
+reflects the mutations.
 
 P-values are corrected for multiple testing with the Benjamini-Hochberg
 method, separately for each scope and layer.
@@ -130,14 +149,21 @@ Co-occurrence of dysregulation events
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Events.** An event is the alteration of a gene or of a gene set in a tumour,
-in one of the layers ``mutation``, ``silencing``, ``expression_over`` and
-``expression_under``. The candidate events of a cohort are:
+in one of the layers above. The candidate events of a cohort are:
 
-- the drivers (mutations)
+- the drivers (``mutation``)
 - the genes with significant (q-value < 0.1) epigenetic silencing or expression outliers
 - the long tails with significant selection (q-value < 0.1) of the gene sets,
-  in the layer where they are most significant. A gene set event is the
-  alteration of any of the genes of its long tail.
+  in the layer where they are most significant (one mutation layer and one
+  per omics layer). A gene set event is the alteration of any of the genes of
+  its long tail in that layer, e.g. the truncating mutations of the gene sets
+  selected through truncating mutations. Using the alterations under selection
+  reduces the dilution by passenger mutations, which is important to detect
+  networks from mutations alone.
+
+With sequencing data only, the events are the drivers and the gene sets
+selected through their mutations, and the modules are networks of drivers and
+pathways mutated together.
 
 The 100 most significant candidates altered in at least 3 tumours are tested,
 in pairs, in the tumours with data of both layers.
@@ -160,8 +186,9 @@ probabilities :math:`q_{1s} q_{2s}`, which gives the p-value of the
 co-occurrence (one-sided test).
 
 **Overlapping events.** The genes shared by two events of the same layer (e.g.
-a driver and a pathway it belongs to, or two overlapping pathways) are removed
-from both events before testing them; pairs left without genes are not tested.
+a driver and a pathway it belongs to, or two overlapping pathways; the mutation
+layers count as one) are removed from both events before testing them; pairs
+left without genes are not tested.
 The same applies to expression events, since the expression of a gene is often
 a direct consequence of its other alterations. Mutations and silencing of the
 same gene (two hits) are tested.
@@ -214,7 +241,8 @@ significantly (q-value < 0.1):
    * - COHORT
      - Cohort
    * - EVENT_1, NAME_1, EVENT_2, NAME_2
-     - Events (``<layer>:<gene or gene set>``) and their names
+     - Events (``<layer>:<gene or gene set>``, e.g. ``mutation:TP53`` or
+       ``mutation_truncating:R-HSA-1234``) and their names
    * - TUMOURS
      - Tumours with data of both layers
    * - TUMOURS_1, TUMOURS_2, TUMOURS_BOTH
@@ -253,7 +281,9 @@ all the pairs of events tested (:file:`<COHORT>.pathway_cooccurrence.tsv.gz`),
 the significant gene sets and modules of every gene
 (:file:`<COHORT>.pathway_genes.tsv.gz`) and statistics of the analysis
 (:file:`<COHORT>.pathways.tsv.gz.stats.json`: method and overdispersion of the
-mutation test, gene sets tested and number of significant results).
+mutation test (``mutation_theta``, the value used, and ``mutation_theta_mle``,
+the maximum likelihood estimate), gene sets tested and number of significant
+results).
 
 
 Considerations
@@ -267,9 +297,9 @@ Considerations
   driver discovery methods (tiers 1 to 3), not only the final drivers, so
   that it is not driven by genes discarded by the filters of the
   post-processing.
-- The mutation tests use the substitutions analysed by dNdScv (indels are not
-  included). When dNdScv has no results for a cohort, only the omics layers are
-  analysed.
+- The selection of the mutation layers is tested with the substitutions
+  analysed by dNdScv (indels are not included). When dNdScv has no results for
+  a cohort, only the omics layers are analysed.
 - The co-occurrence test is conservative: the background model absorbs part of
   the dependence between events and rare events have little power. Absence of
   co-occurrence is not evidence of independence. Mutual exclusivity is not

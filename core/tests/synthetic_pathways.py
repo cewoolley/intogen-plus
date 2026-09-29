@@ -1,13 +1,23 @@
 """
-Synthetic cohort for the pathway analyses.
+Synthetic cohorts for the pathway analyses.
 
-Gene sets:
+PathwayCohort (mutations and methylation):
 
 - LONGTAIL: 40 genes with a modest excess of missense mutations each
   (selected through its long tail; no gene is individually significant)
 - DRIVER_SET: contains DRV1, a strong driver, and neutral genes
 - SILENCED: 30 genes with a mild excess of promoter hypermethylation each;
   their silencing co-occurs with DRV1 mutations
+- NEUTRAL_*: random neutral gene sets
+
+SequencingCohort (mutations only), with a selection network made of DRV2 and
+the long tails of two gene sets:
+
+- DRV1 and DRV2: drivers
+- LONGTAIL: excess of missense mutations in random tumours (selected, not in the network)
+- LOF_TAIL: excess of truncating mutations in the tumours with DRV2 mutations
+- MIS_TAIL: excess of missense mutations in the tumours with DRV2 mutations
+- DRIVER_SET: DRV1 and neutral genes
 - NEUTRAL_*: random neutral gene sets
 """
 
@@ -121,3 +131,84 @@ class PathwayCohort:
             'methylation_events': p('C.methylation_events.tsv.gz'),
             'methylation_matrix': p('C.promoter_methylation.tsv.gz'),
         }
+
+
+class SequencingCohort:
+
+    CONSEQUENCES = {'syn': 'synonymous_variant', 'mis': 'missense_variant', 'non': 'stop_gained',
+                    'spl': 'splice_donor_variant'}
+    FRACTIONS = {'syn': 0.25, 'mis': 0.65, 'non': 0.06, 'spl': 0.04}
+
+    def __init__(self, seed=0, n_genes=800, n_tumours=250, lof_omega=4.0, mis_omega=2.2, network_mis_omega=2.5):
+        rng = self.rng = np.random.default_rng(seed)
+        self.genes = np.array(['DRV1', 'DRV2'] + [f'G{i}' for i in range(2, n_genes)])
+        self.tumours = np.array([f'T{i:03d}' for i in range(n_tumours)])
+        self.sets = {
+            'LONGTAIL': list(self.genes[2:42]),
+            'LOF_TAIL': list(self.genes[42:82]),
+            'MIS_TAIL': list(self.genes[82:122]),
+            'DRIVER_SET': list(self.genes[[0] + list(range(122, 151))]),
+        }
+        for i in range(30):
+            self.sets[f'NEUTRAL_{i}'] = list(rng.choice(self.genes[160:], rng.integers(15, 60), replace=False))
+        self.burden = rng.lognormal(0, 0.8, n_tumours)
+        self.drv1 = rng.choice(n_tumours, 60, replace=False)
+        self.drv2 = rng.choice(n_tumours, 50, replace=False)
+        # excess of mutations: (genes, consequences, omega, tumours where they happen or None for any)
+        self.excess = [(range(2, 42), ['mis'], mis_omega, None),
+                       (range(42, 82), ['non', 'spl'], lof_omega, self.drv2),
+                       (range(82, 122), ['mis'], network_mis_omega, self.drv2)]
+
+    def mutations(self):
+        rng = self.rng
+        n = len(self.genes)
+        length = rng.lognormal(7.2, 0.5, n)
+        pred = rng.lognormal(0, 0.3, n)
+        rate = rng.gamma(8, pred / 8)
+        weights = self.burden / self.burden.sum()
+        counts = {k: np.zeros(n, dtype=int) for k in self.FRACTIONS}
+        rows = []
+
+        def add(gi, k, tumour):
+            i = len(rows)
+            rows.append([f'I{i:010d}__{self.tumours[tumour]}__C__T__{i}', f'1:{i}', 'T', 'ENSG', 'ENST',
+                         'Transcript', self.CONSEQUENCES[k], self.genes[gi], 'YES', 'NM'])
+            counts[k][gi] += 1
+
+        for gi in range(n):
+            for k, f in self.FRACTIONS.items():
+                mean = length[gi] * 2.5e-3 * f * rate[gi]
+                for _ in range(rng.poisson(mean)):
+                    add(gi, k, rng.choice(len(self.tumours), p=weights))
+                for genes, consequences, omega, tumours in self.excess:
+                    if gi in genes and k in consequences:
+                        for _ in range(rng.poisson(mean * (omega - 1))):
+                            add(gi, k, rng.choice(len(self.tumours), p=weights) if tumours is None
+                                else rng.choice(tumours))
+        for t in self.drv1:
+            add(0, 'mis' if rng.uniform() < 0.8 else 'non', t)
+        for t in self.drv2:
+            add(1, 'non' if rng.uniform() < 0.6 else 'mis', t)
+
+        genemuts = pd.DataFrame({'gene_name': self.genes, 'n_syn': counts['syn'], 'n_mis': counts['mis'],
+                                 'n_non': counts['non'], 'n_spl': counts['spl']})
+        for k, f in self.FRACTIONS.items():
+            genemuts[f'exp_{k}'] = length * 2.5e-3 * f
+        genemuts['exp_syn_cv'] = genemuts['exp_syn'] * pred
+        vep = pd.DataFrame(rows, columns=['#Uploaded_variation', 'Location', 'Allele', 'Gene', 'Feature',
+                                          'Feature_type', 'Consequence', 'SYMBOL', 'CANONICAL', 'MANE_SELECT'])
+        return genemuts, vep
+
+    def write(self, folder):
+        os.makedirs(folder, exist_ok=True)
+        p = lambda name: os.path.join(folder, name)
+        genemuts, vep = self.mutations()
+        genemuts.to_csv(p('S.dndscv_genemuts.tsv.gz'), sep='\t', index=False)
+        vep.to_csv(p('S.tsv.gz'), sep='\t', index=False)
+        pd.DataFrame({'SYMBOL': ['DRV1', 'DRV2'], 'TIER': [1, 1], 'FILTER': ['PASS', 'PASS'],
+                      'QVALUE_COMBINATION': [1e-12, 1e-10]}).to_csv(p('S.vet.tsv'), sep='\t', index=False)
+        rows = [(s, 'test', s, g) for s, genes in self.sets.items() for g in genes]
+        pd.DataFrame(rows, columns=['SET', 'SOURCE', 'NAME', 'SYMBOL']).to_csv(p('gene_sets.tsv.gz'), sep='\t',
+                                                                               index=False)
+        return {'genemuts': p('S.dndscv_genemuts.tsv.gz'), 'mutations': p('S.tsv.gz'), 'vet': p('S.vet.tsv'),
+                'gene_sets': p('gene_sets.tsv.gz')}

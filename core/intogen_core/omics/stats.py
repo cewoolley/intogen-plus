@@ -196,6 +196,17 @@ def binomial_pmf(n, p):
     return sps.binom.pmf(np.arange(n + 1), n, p)
 
 
+def simes_combine(pvalues):
+    """
+    Simes' combination of the finite p-values (NaN if none): valid for
+    positively dependent tests, e.g. of overlapping sets of mutations
+    """
+    p = np.sort(np.asarray([v for v in pvalues if v is not None and np.isfinite(v)], dtype=float))
+    if len(p) == 0:
+        return np.nan
+    return float(min(1.0, (len(p) * p / np.arange(1, len(p) + 1)).min()))
+
+
 def fisher_combine(pvalues):
     """Fisher's combination of the finite p-values (NaN if none)"""
     p = np.asarray([v for v in pvalues if v is not None and np.isfinite(v)], dtype=float)

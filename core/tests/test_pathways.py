@@ -6,10 +6,11 @@ import pytest
 from scipy.special import expit
 
 import synthetic_pathways
-from intogen_core.omics.stats import binomial_pmf, fisher_combine, poisson_binomial_tail, sum_pmfs, upper_tail
+from intogen_core.omics.stats import (binomial_pmf, fisher_combine, poisson_binomial_tail, simes_combine, sum_pmfs,
+                                     upper_tail)
 from intogen_core.pathways import analysis, cooccurrence
 from intogen_core.pathways.genesets import GeneSets, read_gene_sets
-from intogen_core.pathways.selection import EventLayer, MutationLayer, estimate_theta
+from intogen_core.pathways.selection import MUTATION_LAYERS, EventLayer, MutationLayer, estimate_theta
 
 
 def neutral_genemuts(rng, n=600, theta=8.0, covariates=True):
@@ -34,6 +35,9 @@ def test_sum_of_binomials_is_exact():
     assert upper_tail(pmf, 0) == 1.0 and upper_tail(pmf, len(pmf)) == 0.0
     assert fisher_combine([np.nan]) != fisher_combine([np.nan])   # NaN
     assert fisher_combine([0.01, 0.01]) < 0.01
+    assert simes_combine([0.01, 0.5, np.nan]) == pytest.approx(0.02)
+    assert simes_combine([0.04, 0.05, 0.9]) == pytest.approx(0.075)
+    assert np.isnan(simes_combine([np.nan]))
 
 
 def test_theta_estimate():
@@ -42,6 +46,25 @@ def test_theta_estimate():
     counts = rng.poisson(rng.gamma(4.0, mean / 4.0))
     assert estimate_theta(counts, mean) == pytest.approx(4.0, rel=0.25)
     assert np.isinf(estimate_theta(rng.poisson(mean), mean)) or estimate_theta(rng.poisson(mean), mean) > 50
+
+
+def test_theta_lower_bound():
+    """The lower bound used by the tests covers the true overdispersion with few genes"""
+    covered, ratio = [], []
+    for rep in range(60):
+        rng = np.random.default_rng(100 + rep)
+        mean = rng.lognormal(0.3, 0.5, 800)
+        counts = rng.poisson(rng.gamma(8.0, mean / 8.0))
+        bound, mle = estimate_theta(counts, mean, confidence=0.95), estimate_theta(counts, mean)
+        covered.append(bound <= 8.0)
+        ratio.append(bound / mle)
+    assert np.mean(covered) >= 0.9
+    assert max(ratio) < 1
+    # the bound is close to the estimate with a whole exome
+    rng = np.random.default_rng(7)
+    mean = rng.lognormal(0.3, 0.5, 19000)
+    counts = rng.poisson(rng.gamma(8.0, mean / 8.0))
+    assert estimate_theta(counts, mean, confidence=0.95) / estimate_theta(counts, mean) > 0.75
 
 
 @pytest.mark.parametrize('method', ['nb', 'conditional'])
@@ -117,6 +140,8 @@ def test_overlapping_events():
     # expression changes of a gene are not co-occurrence with its own silencing or mutation
     assert tested_pairs == {('silencing:A', 'mutation:A')}
     assert cooccurrence.overlap_removed('mutation', 'mutation')
+    # truncating mutations are also mutations
+    assert cooccurrence.overlap_removed('mutation', 'mutation_truncating')
     assert not cooccurrence.overlap_removed('mutation', 'silencing')
 
 
@@ -194,3 +219,53 @@ def test_empty_inputs(tmp_path):
     df = pd.read_csv(out, sep='\t')
     assert set(df['LAYER']) == {'silencing', 'combined'}
     assert 'warning_mutations' in json.load(open(out + '.stats.json'))
+
+
+@pytest.fixture(scope='module')
+def sequencing_results(tmp_path_factory):
+    """Mutations only: the selection network is DRV2 and the long tails of LOF_TAIL and MIS_TAIL"""
+    folder = str(tmp_path_factory.mktemp('sequencing'))
+    files = synthetic_pathways.SequencingCohort(seed=1).write(folder)
+    out = {k: f'{folder}/S.{k}.tsv.gz' for k in ['pathways', 'pathway_cooccurrence', 'pathway_genes']}
+    analysis.run(output=out['pathways'], cooccurrence_output=out['pathway_cooccurrence'],
+                 genes_output=out['pathway_genes'], **files)
+    return out
+
+
+def test_sequencing_only_selection(sequencing_results):
+    df = pd.read_csv(sequencing_results['pathways'], sep='\t')
+    assert set(df['LAYER']) == set(MUTATION_LAYERS) | {'combined'}
+    df = df.set_index(['SET', 'SCOPE', 'LAYER'])
+    # selected through truncating mutations only: diluted among all the mutations
+    lof = df.loc['LOF_TAIL'].xs('long_tail')
+    assert lof.loc['mutation_truncating', 'Q_VALUE'] < 1e-6
+    assert lof.loc['combined', 'Q_VALUE'] < 1e-6
+    assert lof.loc['combined', 'Q_VALUE'] < lof.loc['mutation', 'Q_VALUE']
+    for name in ['LONGTAIL', 'MIS_TAIL']:
+        assert df.loc[(name, 'long_tail', 'combined'), 'Q_VALUE'] < 0.01
+    assert df.loc[('DRIVER_SET', 'long_tail', 'combined'), 'Q_VALUE'] > 0.1
+    stats = json.load(open(sequencing_results['pathways'] + '.stats.json'))
+    assert stats['layers'] == list(MUTATION_LAYERS)
+    assert stats['mutation_theta'] < stats['mutation_theta_mle']
+    genes = pd.read_csv(sequencing_results['pathway_genes'], sep='\t').set_index('SYMBOL')
+    assert genes.loc['G50', 'PATHWAYS'] == 'LOF_TAIL'
+
+
+def test_sequencing_only_network(sequencing_results):
+    pairs = pd.read_csv(sequencing_results['pathway_cooccurrence'], sep='\t')
+    significant = pairs[pairs['Q_VALUE'] < 0.1]
+    modules = dict(zip(significant['EVENT_1'], significant['MODULE']))
+    modules.update(zip(significant['EVENT_2'], significant['MODULE']))
+    # gene sets are events with the mutations they are selected through
+    assert modules['mutation:DRV2'] == modules['mutation_truncating:LOF_TAIL'] == 'M1'
+    assert modules['mutation_missense:MIS_TAIL'] == 'M1'
+    assert set(modules) == {'mutation:DRV2', 'mutation_truncating:LOF_TAIL', 'mutation_missense:MIS_TAIL'}
+    # selected, but not together with the network
+    events = set(pairs['EVENT_1']) | set(pairs['EVENT_2'])
+    assert {'mutation:DRV1', 'mutation_missense:LONGTAIL'} <= events
+    hit = significant[significant['EVENT_1'].isin(['mutation:DRV2', 'mutation_truncating:LOF_TAIL']) &
+                      significant['EVENT_2'].isin(['mutation:DRV2', 'mutation_truncating:LOF_TAIL'])].iloc[0]
+    assert hit['Q_VALUE'] < 1e-4 and hit['TUMOURS_BOTH'] > 2 * hit['EXPECTED_BOTH']
+    genes = pd.read_csv(sequencing_results['pathway_genes'], sep='\t').set_index('SYMBOL')
+    assert genes.loc['DRV2', 'MODULES'] == 'M1'
+    assert 'DRV1' not in genes.index or pd.isna(genes.loc['DRV1', 'MODULES'])

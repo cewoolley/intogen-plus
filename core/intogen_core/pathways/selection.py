@@ -8,7 +8,8 @@ Mutations (``mutation``, ``mutation_missense``, ``mutation_truncating``)
     Default (``nb``), following the model of dNdScv: the local mutation rate of
     each gene is predicted from genomic covariates (``exp_syn_cv``) with
     gamma-distributed variation (shape ``theta``, estimated from the synonymous
-    mutations of all genes). Updated with the synonymous mutations observed in
+    mutations of all genes; the lower bound of its 95% confidence interval is
+    used, to account for its uncertainty). Updated with the synonymous mutations observed in
     the gene, the number of non-synonymous mutations expected under neutrality
     follows a negative binomial distribution. The number of non-synonymous
     mutations of a set is compared with the sum of these distributions
@@ -46,11 +47,17 @@ MUTATION_LAYERS = {
 OMICS_LAYERS = ['silencing', 'expression_over', 'expression_under']
 
 
-def estimate_theta(n_syn, mean):
+def estimate_theta(n_syn, mean, confidence=None):
     """
     Maximum likelihood shape (overdispersion) of a negative binomial model
     of the synonymous mutations per gene given their covariate-based expectation.
     Returns inf when there is no overdispersion.
+
+    With a confidence level, returns instead the lower bound of its one-sided
+    profile likelihood confidence interval. Smaller shapes mean more
+    variation of the mutation rate between genes, so that set-level tests are
+    conservative with respect to the uncertainty of the estimate, which is large
+    when few genes are analysed.
     """
     ok = np.isfinite(mean) & (mean > 0)
     n_syn, mean = n_syn[ok], mean[ok]
@@ -61,8 +68,15 @@ def estimate_theta(n_syn, mean):
         theta = np.exp(log_theta)
         return -sps.nbinom.logpmf(n_syn, theta, theta / (theta + mean)).sum()
 
-    res = optimize.minimize_scalar(nll, bounds=(-6, 12), method='bounded')
-    return np.inf if res.x > 11.5 else float(np.exp(res.x))
+    lower, upper = -6, 12
+    res = optimize.minimize_scalar(nll, bounds=(lower, upper), method='bounded')
+    if confidence is None:
+        return np.inf if res.x > upper - 0.5 else float(np.exp(res.x))
+
+    cutoff = res.fun + sps.chi2.ppf(2 * confidence - 1, 1) / 2
+    if nll(lower) <= cutoff:
+        return float(np.exp(lower))
+    return float(np.exp(optimize.brentq(lambda x: nll(x) - cutoff, lower, res.x)))
 
 
 class MutationLayer:
@@ -73,6 +87,7 @@ class MutationLayer:
         genemuts: dNdScv genemuts table
         layer: mutation, mutation_missense or mutation_truncating
         method: nb (covariates, default when exp_syn_cv is available) or conditional
+        theta: overdispersion of the nb method (default: lower bound of its 95% confidence interval)
     """
 
     def __init__(self, genemuts, layer, method=None, theta=None):
@@ -89,7 +104,7 @@ class MutationLayer:
         valid = np.isfinite(e_ns) & np.isfinite(e_syn) & (e_ns + e_syn > 0)
         if method == 'nb':
             valid &= np.isfinite(mu) & (mu > 0) & (e_syn > 0)
-            self.theta = estimate_theta(s, mu) if theta is None else theta
+            self.theta = estimate_theta(s[valid], mu[valid], confidence=0.95) if theta is None else theta
         else:
             self.theta = None
         self.data = {}
