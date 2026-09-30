@@ -1,0 +1,1163 @@
+{
+ "cohorts": {
+  "KIRC": {
+   "tumours": 369,
+   "theta_dndscv": 12.7653,
+   "coding_mutations": 26470,
+   "drivers_dndscv_q10": 13,
+   "global_wmis": 1.05011872599051,
+   "global_wtru": 1.03442314389209
+  },
+  "LUAD": {
+   "tumours": 515,
+   "theta_dndscv": 3.32835,
+   "coding_mutations": 183333,
+   "drivers_dndscv_q10": 24,
+   "global_wmis": 1.05137404110469,
+   "global_wtru": 0.940230798104958
+  },
+  "BRCA": {
+   "tumours": 1016,
+   "theta_dndscv": 9.27922,
+   "coding_mutations": 91083,
+   "drivers_dndscv_q10": 32,
+   "global_wmis": 1.09056192796673,
+   "global_wtru": 1.0859254928378
+  },
+  "COAD": {
+   "tumours": 391,
+   "theta_dndscv": 7.71499,
+   "coding_mutations": 151319,
+   "drivers_dndscv_q10": 37,
+   "global_wmis": 1.06917353664289,
+   "global_wtru": 1.08143928765809
+  }
+ },
+ "calibration": {
+  "KIRC": {
+   "Naive Poisson": {
+    "p05": 0.065,
+    "p01": 0.0175,
+    "p05_large": 0.06428571428571428
+   },
+   "dNdScv genesetdnds": {
+    "p05": 0.0525,
+    "p01": 0.0125,
+    "p05_large": 0.014285714285714285
+   },
+   "Conditional binomial": {
+    "p05": 0.0225,
+    "p01": 0.0025,
+    "p05_large": 0.0
+   },
+   "Fork as shipped": {
+    "p05": 0.0275,
+    "p01": 0.0025,
+    "p05_large": 0.014285714285714285
+   },
+   "Fork corrected": {
+    "p05": 0.0225,
+    "p01": 0.0025,
+    "p05_large": 0.007142857142857143
+   },
+   "n_sets": 400
+  },
+  "LUAD": {
+   "Naive Poisson": {
+    "p05": 0.235,
+    "p01": 0.1475,
+    "p05_large": 0.2642857142857143
+   },
+   "dNdScv genesetdnds": {
+    "p05": 0.075,
+    "p01": 0.025,
+    "p05_large": 0.11428571428571428
+   },
+   "Conditional binomial": {
+    "p05": 0.04,
+    "p01": 0.01,
+    "p05_large": 0.06428571428571428
+   },
+   "Fork as shipped": {
+    "p05": 0.0475,
+    "p01": 0.015,
+    "p05_large": 0.05714285714285714
+   },
+   "Fork corrected": {
+    "p05": 0.03,
+    "p01": 0.005,
+    "p05_large": 0.03571428571428571
+   },
+   "n_sets": 400
+  },
+  "BRCA": {
+   "Naive Poisson": {
+    "p05": 0.1375,
+    "p01": 0.0525,
+    "p05_large": 0.18571428571428572
+   },
+   "dNdScv genesetdnds": {
+    "p05": 0.1125,
+    "p01": 0.02,
+    "p05_large": 0.17142857142857143
+   },
+   "Conditional binomial": {
+    "p05": 0.055,
+    "p01": 0.0075,
+    "p05_large": 0.1
+   },
+   "Fork as shipped": {
+    "p05": 0.045,
+    "p01": 0.0175,
+    "p05_large": 0.07857142857142857
+   },
+   "Fork corrected": {
+    "p05": 0.025,
+    "p01": 0.01,
+    "p05_large": 0.03571428571428571
+   },
+   "n_sets": 400
+  },
+  "COAD": {
+   "Naive Poisson": {
+    "p05": 0.22,
+    "p01": 0.105,
+    "p05_large": 0.2714285714285714
+   },
+   "dNdScv genesetdnds": {
+    "p05": 0.125,
+    "p01": 0.0375,
+    "p05_large": 0.18571428571428572
+   },
+   "Conditional binomial": {
+    "p05": 0.0775,
+    "p01": 0.0175,
+    "p05_large": 0.11428571428571428
+   },
+   "Fork as shipped": {
+    "p05": 0.1,
+    "p01": 0.0275,
+    "p05_large": 0.1357142857142857
+   },
+   "Fork corrected": {
+    "p05": 0.04,
+    "p01": 0.005,
+    "p05_large": 0.02857142857142857
+   },
+   "n_sets": 400
+  }
+ },
+ "spikein": [
+  {
+   "cohort": "KIRC",
+   "kind": "missense",
+   "omega": 1.3,
+   "genes_significant_mean": 0.0,
+   "prefork_ora": 0.0,
+   "fork_shipped": 0.0,
+   "fork_corrected": 0.0,
+   "reps": 25
+  },
+  {
+   "cohort": "KIRC",
+   "kind": "missense",
+   "omega": 1.6,
+   "genes_significant_mean": 0.0,
+   "prefork_ora": 0.0,
+   "fork_shipped": 0.12,
+   "fork_corrected": 0.0,
+   "reps": 25
+  },
+  {
+   "cohort": "KIRC",
+   "kind": "missense",
+   "omega": 2.0,
+   "genes_significant_mean": 0.0,
+   "prefork_ora": 0.0,
+   "fork_shipped": 0.72,
+   "fork_corrected": 0.6,
+   "reps": 25
+  },
+  {
+   "cohort": "KIRC",
+   "kind": "truncating",
+   "omega": 2.0,
+   "genes_significant_mean": 0.0,
+   "prefork_ora": 0.0,
+   "fork_shipped": 0.0,
+   "fork_corrected": 0.0,
+   "reps": 25
+  },
+  {
+   "cohort": "KIRC",
+   "kind": "truncating",
+   "omega": 3.0,
+   "genes_significant_mean": 0.0,
+   "prefork_ora": 0.0,
+   "fork_shipped": 0.2,
+   "fork_corrected": 0.08,
+   "reps": 25
+  },
+  {
+   "cohort": "LUAD",
+   "kind": "missense",
+   "omega": 1.3,
+   "genes_significant_mean": 0.0,
+   "prefork_ora": 0.0,
+   "fork_shipped": 0.44,
+   "fork_corrected": 0.2,
+   "reps": 25
+  },
+  {
+   "cohort": "LUAD",
+   "kind": "missense",
+   "omega": 1.6,
+   "genes_significant_mean": 0.04,
+   "prefork_ora": 0.0,
+   "fork_shipped": 1.0,
+   "fork_corrected": 1.0,
+   "reps": 25
+  },
+  {
+   "cohort": "LUAD",
+   "kind": "missense",
+   "omega": 2.0,
+   "genes_significant_mean": 0.24,
+   "prefork_ora": 0.0,
+   "fork_shipped": 1.0,
+   "fork_corrected": 1.0,
+   "reps": 25
+  },
+  {
+   "cohort": "LUAD",
+   "kind": "truncating",
+   "omega": 2.0,
+   "genes_significant_mean": 0.0,
+   "prefork_ora": 0.0,
+   "fork_shipped": 0.8,
+   "fork_corrected": 0.8,
+   "reps": 25
+  },
+  {
+   "cohort": "LUAD",
+   "kind": "truncating",
+   "omega": 3.0,
+   "genes_significant_mean": 0.12,
+   "prefork_ora": 0.0,
+   "fork_shipped": 1.0,
+   "fork_corrected": 1.0,
+   "reps": 25
+  },
+  {
+   "cohort": "BRCA",
+   "kind": "missense",
+   "omega": 1.3,
+   "genes_significant_mean": 0.0,
+   "prefork_ora": 0.0,
+   "fork_shipped": 0.76,
+   "fork_corrected": 0.16,
+   "reps": 25
+  },
+  {
+   "cohort": "BRCA",
+   "kind": "missense",
+   "omega": 1.6,
+   "genes_significant_mean": 0.0,
+   "prefork_ora": 0.0,
+   "fork_shipped": 1.0,
+   "fork_corrected": 0.68,
+   "reps": 25
+  },
+  {
+   "cohort": "BRCA",
+   "kind": "missense",
+   "omega": 2.0,
+   "genes_significant_mean": 0.0,
+   "prefork_ora": 0.0,
+   "fork_shipped": 1.0,
+   "fork_corrected": 1.0,
+   "reps": 25
+  },
+  {
+   "cohort": "BRCA",
+   "kind": "truncating",
+   "omega": 2.0,
+   "genes_significant_mean": 0.04,
+   "prefork_ora": 0.0,
+   "fork_shipped": 0.44,
+   "fork_corrected": 0.12,
+   "reps": 25
+  },
+  {
+   "cohort": "BRCA",
+   "kind": "truncating",
+   "omega": 3.0,
+   "genes_significant_mean": 0.12,
+   "prefork_ora": 0.0,
+   "fork_shipped": 1.0,
+   "fork_corrected": 0.84,
+   "reps": 25
+  },
+  {
+   "cohort": "COAD",
+   "kind": "missense",
+   "omega": 1.3,
+   "genes_significant_mean": 0.0,
+   "prefork_ora": 0.0,
+   "fork_shipped": 0.44,
+   "fork_corrected": 0.04,
+   "reps": 25
+  },
+  {
+   "cohort": "COAD",
+   "kind": "missense",
+   "omega": 1.6,
+   "genes_significant_mean": 0.0,
+   "prefork_ora": 0.0,
+   "fork_shipped": 1.0,
+   "fork_corrected": 0.92,
+   "reps": 25
+  },
+  {
+   "cohort": "COAD",
+   "kind": "missense",
+   "omega": 2.0,
+   "genes_significant_mean": 0.36,
+   "prefork_ora": 0.04,
+   "fork_shipped": 1.0,
+   "fork_corrected": 1.0,
+   "reps": 25
+  },
+  {
+   "cohort": "COAD",
+   "kind": "truncating",
+   "omega": 2.0,
+   "genes_significant_mean": 0.0,
+   "prefork_ora": 0.0,
+   "fork_shipped": 0.4,
+   "fork_corrected": 0.16,
+   "reps": 25
+  },
+  {
+   "cohort": "COAD",
+   "kind": "truncating",
+   "omega": 3.0,
+   "genes_significant_mean": 0.2,
+   "prefork_ora": 0.04,
+   "fork_shipped": 1.0,
+   "fork_corrected": 0.96,
+   "reps": 25
+  }
+ ],
+ "sets": {
+  "KIRC": {
+   "ORA of drivers (pre-fork + standard enrichment)": {
+    "n": 27,
+    "artefact_like": 0
+   },
+   "dNdScv genesetdnds (long tail)": {
+    "n": 1,
+    "artefact_like": 0
+   },
+   "fork as shipped (long tail)": {
+    "n": 0,
+    "artefact_like": 0
+   },
+   "fork corrected (long tail)": {
+    "n": 0,
+    "artefact_like": 0
+   }
+  },
+  "LUAD": {
+   "ORA of drivers (pre-fork + standard enrichment)": {
+    "n": 51,
+    "artefact_like": 0
+   },
+   "dNdScv genesetdnds (long tail)": {
+    "n": 5,
+    "artefact_like": 2
+   },
+   "fork as shipped (long tail)": {
+    "n": 57,
+    "artefact_like": 8
+   },
+   "fork corrected (long tail)": {
+    "n": 11,
+    "artefact_like": 1
+   }
+  },
+  "BRCA": {
+   "ORA of drivers (pre-fork + standard enrichment)": {
+    "n": 193,
+    "artefact_like": 1
+   },
+   "dNdScv genesetdnds (long tail)": {
+    "n": 2,
+    "artefact_like": 1
+   },
+   "fork as shipped (long tail)": {
+    "n": 93,
+    "artefact_like": 12
+   },
+   "fork corrected (long tail)": {
+    "n": 1,
+    "artefact_like": 1
+   }
+  },
+  "COAD": {
+   "ORA of drivers (pre-fork + standard enrichment)": {
+    "n": 170,
+    "artefact_like": 4
+   },
+   "dNdScv genesetdnds (long tail)": {
+    "n": 3,
+    "artefact_like": 0
+   },
+   "fork as shipped (long tail)": {
+    "n": 33,
+    "artefact_like": 9
+   },
+   "fork corrected (long tail)": {
+    "n": 0,
+    "artefact_like": 0
+   }
+  }
+ },
+ "cooccurrence": {
+  "real": {
+   "KIRC": {
+    "genes": 29,
+    "drivers_tested": 13,
+    "pairs": 406,
+    "fisher_p05_cooccurring": 32,
+    "fisher_q10_cooccurring": 0,
+    "fisher_q10_by_kind": {},
+    "discover_q10": 0,
+    "discover_q10_by_kind": {},
+    "discover_significant_pairs": [],
+    "elastic_q10": 0,
+    "elastic_q10_by_kind": {},
+    "elastic_significant_pairs": [],
+    "controls": [
+     {
+      "pair": "VHL-PBRM1",
+      "expected": "co-occurrence (3p loss)",
+      "both": 81,
+      "expected_independent": 69.0,
+      "expected_burden_aware": 73.5,
+      "fisher_p": 0.010935861581883154,
+      "fisher_odds": 1.7270788912579957,
+      "discover_p": 0.1719239579460164,
+      "discover_q": 1.0,
+      "expected_elastic": 70.4,
+      "elastic_p": 0.09027170445140448,
+      "elastic_q": 1.0
+     },
+     {
+      "pair": "PBRM1-BAP1",
+      "expected": "mutual exclusivity",
+      "both": 7,
+      "expected_independent": 15.2,
+      "expected_burden_aware": 17.1,
+      "fisher_p": 0.004630761863790916,
+      "fisher_odds": 0.30427819720887667,
+      "discover_p": 0.9986836700855054,
+      "discover_q": 1.0,
+      "expected_elastic": 16.0,
+      "elastic_p": 0.9967331585339794,
+      "elastic_q": 1.0
+     }
+    ]
+   },
+   "LUAD": {
+    "genes": 46,
+    "drivers_tested": 24,
+    "pairs": 1035,
+    "fisher_p05_cooccurring": 422,
+    "fisher_q10_cooccurring": 400,
+    "fisher_q10_by_kind": {
+     "passenger-passenger": 224,
+     "driver-passenger": 147,
+     "driver-driver": 29
+    },
+    "discover_q10": 0,
+    "discover_q10_by_kind": {},
+    "discover_significant_pairs": [],
+    "elastic_q10": 0,
+    "elastic_q10_by_kind": {},
+    "elastic_significant_pairs": [],
+    "controls": [
+     {
+      "pair": "STK11-KEAP1",
+      "expected": "co-occurrence (KL subtype)",
+      "both": 25,
+      "expected_independent": 13.8,
+      "expected_burden_aware": 22.1,
+      "fisher_p": 0.0006414476917384232,
+      "fisher_odds": 2.658810002874389,
+      "discover_p": 0.28266898163403714,
+      "discover_q": 1.0,
+      "expected_elastic": 14.4,
+      "elastic_p": 0.006065864295708037,
+      "elastic_q": 0.9975903093564279
+     },
+     {
+      "pair": "KRAS-STK11",
+      "expected": "co-occurrence",
+      "both": 38,
+      "expected_independent": 22.6,
+      "expected_burden_aware": 33.6,
+      "fisher_p": 5.846133744327534e-05,
+      "fisher_odds": 2.8562091503267975,
+      "discover_p": 0.22416306509328826,
+      "discover_q": 1.0,
+      "expected_elastic": 23.0,
+      "elastic_p": 0.0019282368206410285,
+      "elastic_q": 0.6535021188880988
+     },
+     {
+      "pair": "KRAS-EGFR",
+      "expected": "mutual exclusivity",
+      "both": 1,
+      "expected_independent": 20.7,
+      "expected_burden_aware": 31.0,
+      "fisher_p": 1.3970961057039133e-10,
+      "fisher_odds": 0.027841561423650976,
+      "discover_p": 0.9999999999999998,
+      "discover_q": 1.0,
+      "expected_elastic": 19.3,
+      "elastic_p": 0.9999999973117454,
+      "elastic_q": 1.0
+     }
+    ]
+   },
+   "BRCA": {
+    "genes": 48,
+    "drivers_tested": 32,
+    "pairs": 1128,
+    "fisher_p05_cooccurring": 196,
+    "fisher_q10_cooccurring": 87,
+    "fisher_q10_by_kind": {
+     "passenger-passenger": 38,
+     "driver-passenger": 33,
+     "driver-driver": 16
+    },
+    "discover_q10": 0,
+    "discover_q10_by_kind": {},
+    "discover_significant_pairs": [],
+    "elastic_q10": 1,
+    "elastic_q10_by_kind": {
+     "driver-driver": 1
+    },
+    "elastic_significant_pairs": [
+     "AKT1-CTCF"
+    ],
+    "controls": [
+     {
+      "pair": "CDH1-PIK3CA",
+      "expected": "co-occurrence (lobular)",
+      "both": 62,
+      "expected_independent": 43.7,
+      "expected_burden_aware": 61.1,
+      "fisher_p": 0.0004446566322383838,
+      "fisher_odds": 1.9875598086124402,
+      "discover_p": 0.4695303619467355,
+      "discover_q": 1.0,
+      "expected_elastic": 43.7,
+      "elastic_p": 0.004423628675211232,
+      "elastic_q": 0.5515953753546109
+     },
+     {
+      "pair": "TP53-PIK3CA",
+      "expected": "mutual exclusivity",
+      "both": 80,
+      "expected_independent": 118.5,
+      "expected_burden_aware": 146.9,
+      "fisher_p": 6.845656631750673e-08,
+      "fisher_odds": 0.4511214913941842,
+      "discover_p": 0.9999999999995319,
+      "discover_q": 1.0,
+      "expected_elastic": 118.2,
+      "elastic_p": 0.9999713480571015,
+      "elastic_q": 1.0
+     },
+     {
+      "pair": "TP53-CDH1",
+      "expected": "mutual exclusivity",
+      "both": 9,
+      "expected_independent": 43.7,
+      "expected_burden_aware": 61.1,
+      "fisher_p": 2.5174728237680177e-14,
+      "fisher_odds": 0.12306697827059818,
+      "discover_p": 1.0,
+      "discover_q": 1.0,
+      "expected_elastic": 43.8,
+      "elastic_p": 0.9999999999816952,
+      "elastic_q": 1.0
+     }
+    ]
+   },
+   "COAD": {
+    "genes": 56,
+    "drivers_tested": 37,
+    "pairs": 1540,
+    "fisher_p05_cooccurring": 716,
+    "fisher_q10_cooccurring": 714,
+    "fisher_q10_by_kind": {
+     "driver-passenger": 364,
+     "driver-driver": 197,
+     "passenger-passenger": 153
+    },
+    "discover_q10": 1,
+    "discover_q10_by_kind": {
+     "driver-driver": 1
+    },
+    "discover_significant_pairs": [
+     "BMPR2-BRAF"
+    ],
+    "elastic_q10": 0,
+    "elastic_q10_by_kind": {},
+    "elastic_significant_pairs": [],
+    "controls": [
+     {
+      "pair": "APC-KRAS",
+      "expected": "co-occurrence",
+      "both": 137,
+      "expected_independent": 119.0,
+      "expected_burden_aware": 131.7,
+      "fisher_p": 4.958647586236867e-05,
+      "fisher_odds": 2.6200460829493086,
+      "discover_p": 0.27552708730765546,
+      "discover_q": 1.0,
+      "expected_elastic": 119.1,
+      "elastic_p": 0.02879632058100545,
+      "elastic_q": 1.0
+     },
+     {
+      "pair": "BRAF-KRAS",
+      "expected": "mutual exclusivity",
+      "both": 4,
+      "expected_independent": 23.2,
+      "expected_burden_aware": 36.2,
+      "fisher_p": 1.4327712355731502e-09,
+      "fisher_odds": 0.08439024390243903,
+      "discover_p": 0.9999999999999998,
+      "discover_q": 1.0,
+      "expected_elastic": 22.9,
+      "elastic_p": 0.9999999699769547,
+      "elastic_q": 1.0
+     },
+     {
+      "pair": "BRAF-APC",
+      "expected": "mutual exclusivity",
+      "both": 19,
+      "expected_independent": 38.3,
+      "expected_burden_aware": 46.2,
+      "fisher_p": 5.636496132519823e-09,
+      "fisher_odds": 0.16622369878183832,
+      "discover_p": 0.9999999812557212,
+      "discover_q": 1.0,
+      "expected_elastic": 34.9,
+      "elastic_p": 0.9997597359604968,
+      "elastic_q": 1.0
+     }
+    ]
+   }
+  },
+  "planted": [
+   {
+    "COHORT": "LUAD",
+    "ALPHA": 0.0,
+    "PSI": 1.0,
+    "FISHER_P05": 0.05,
+    "DISCOVER_P05": 0.0,
+    "ELASTIC_P05": 0.02666666666666667
+   },
+   {
+    "COHORT": "LUAD",
+    "ALPHA": 0.0,
+    "PSI": 2.0,
+    "FISHER_P05": 0.7433333333333333,
+    "DISCOVER_P05": 0.016666666666666666,
+    "ELASTIC_P05": 0.6266666666666667
+   },
+   {
+    "COHORT": "LUAD",
+    "ALPHA": 0.0,
+    "PSI": 3.0,
+    "FISHER_P05": 1.0,
+    "DISCOVER_P05": 0.31,
+    "ELASTIC_P05": 0.9833333333333333
+   },
+   {
+    "COHORT": "LUAD",
+    "ALPHA": 0.5,
+    "PSI": 1.0,
+    "FISHER_P05": 0.20666666666666667,
+    "DISCOVER_P05": 0.0,
+    "ELASTIC_P05": 0.016666666666666666
+   },
+   {
+    "COHORT": "LUAD",
+    "ALPHA": 0.5,
+    "PSI": 2.0,
+    "FISHER_P05": 0.9433333333333334,
+    "DISCOVER_P05": 0.13333333333333333,
+    "ELASTIC_P05": 0.6733333333333333
+   },
+   {
+    "COHORT": "LUAD",
+    "ALPHA": 0.5,
+    "PSI": 3.0,
+    "FISHER_P05": 0.9966666666666667,
+    "DISCOVER_P05": 0.6366666666666667,
+    "ELASTIC_P05": 0.97
+   },
+   {
+    "COHORT": "LUAD",
+    "ALPHA": 1.0,
+    "PSI": 1.0,
+    "FISHER_P05": 0.8033333333333333,
+    "DISCOVER_P05": 0.01,
+    "ELASTIC_P05": 0.006666666666666667
+   },
+   {
+    "COHORT": "LUAD",
+    "ALPHA": 1.0,
+    "PSI": 2.0,
+    "FISHER_P05": 1.0,
+    "DISCOVER_P05": 0.7066666666666667,
+    "ELASTIC_P05": 0.59
+   },
+   {
+    "COHORT": "LUAD",
+    "ALPHA": 1.0,
+    "PSI": 3.0,
+    "FISHER_P05": 1.0,
+    "DISCOVER_P05": 0.9933333333333333,
+    "ELASTIC_P05": 0.9633333333333334
+   },
+   {
+    "COHORT": "COAD",
+    "ALPHA": 0.0,
+    "PSI": 1.0,
+    "FISHER_P05": 0.05,
+    "DISCOVER_P05": 0.0,
+    "ELASTIC_P05": 0.02
+   },
+   {
+    "COHORT": "COAD",
+    "ALPHA": 0.0,
+    "PSI": 2.0,
+    "FISHER_P05": 0.6233333333333333,
+    "DISCOVER_P05": 0.0,
+    "ELASTIC_P05": 0.49
+   },
+   {
+    "COHORT": "COAD",
+    "ALPHA": 0.0,
+    "PSI": 3.0,
+    "FISHER_P05": 0.9633333333333334,
+    "DISCOVER_P05": 0.0,
+    "ELASTIC_P05": 0.9133333333333333
+   },
+   {
+    "COHORT": "COAD",
+    "ALPHA": 0.5,
+    "PSI": 1.0,
+    "FISHER_P05": 0.26666666666666666,
+    "DISCOVER_P05": 0.0,
+    "ELASTIC_P05": 0.006666666666666667
+   },
+   {
+    "COHORT": "COAD",
+    "ALPHA": 0.5,
+    "PSI": 2.0,
+    "FISHER_P05": 0.9433333333333334,
+    "DISCOVER_P05": 0.0033333333333333335,
+    "ELASTIC_P05": 0.44333333333333336
+   },
+   {
+    "COHORT": "COAD",
+    "ALPHA": 0.5,
+    "PSI": 3.0,
+    "FISHER_P05": 1.0,
+    "DISCOVER_P05": 0.08,
+    "ELASTIC_P05": 0.8933333333333333
+   },
+   {
+    "COHORT": "COAD",
+    "ALPHA": 1.0,
+    "PSI": 1.0,
+    "FISHER_P05": 1.0,
+    "DISCOVER_P05": 0.06333333333333334,
+    "ELASTIC_P05": 0.0
+   },
+   {
+    "COHORT": "COAD",
+    "ALPHA": 1.0,
+    "PSI": 2.0,
+    "FISHER_P05": 1.0,
+    "DISCOVER_P05": 0.7933333333333333,
+    "ELASTIC_P05": 0.22
+   },
+   {
+    "COHORT": "COAD",
+    "ALPHA": 1.0,
+    "PSI": 3.0,
+    "FISHER_P05": 1.0,
+    "DISCOVER_P05": 0.98,
+    "ELASTIC_P05": 0.63
+   }
+  ]
+ },
+ "final": {
+  "KIRC": {
+   "long_tail_sets": 0,
+   "long_tail_sets_without_cgc": 0,
+   "long_tail": [],
+   "events": 20,
+   "pairs": 188,
+   "exclusive": [],
+   "cooccurring": [],
+   "background": {
+    "source": "covariates",
+    "features": 20,
+    "genes_without_covariates": 125,
+    "mutation_missense": {
+     "genes_fitted": 19953,
+     "omega_quantiles": [
+      0.883814277937817,
+      1.0371132857612064,
+      1.2245502039667937
+     ]
+    },
+    "mutation_truncating": {
+     "genes_fitted": 19953,
+     "omega_quantiles": [
+      0.7461231216986856,
+      0.922504387897896,
+      1.2163410502234329
+     ]
+    }
+   },
+   "theta_used": 8.112555782789531,
+   "theta_mle": 12.76531450976139
+  },
+  "LUAD": {
+   "long_tail_sets": 11,
+   "long_tail_sets_without_cgc": 6,
+   "long_tail": [
+    {
+     "set": "HALLMARK_WNT_BETA_CATENIN_SIGNALING",
+     "q": 0.0155837,
+     "n_genes": 42,
+     "layer": "mutation_missense",
+     "ratio": 1.48627,
+     "top_genes": "NOTCH4:53,NCOR2:29,NOTCH1:24,CTNNB1:20,PTCH1:16"
+    },
+    {
+     "set": "REACTOME_EXTRACELLULAR_MATRIX_ORGANIZATION",
+     "q": 0.034244,
+     "n_genes": 294,
+     "layer": "mutation",
+     "ratio": 1.11289,
+     "top_genes": "COL11A1:136,NRXN1:107,TNR:105,DMD:99,FBN2:91"
+    },
+    {
+     "set": "REACTOME_SIGNALING_BY_WNT",
+     "q": 0.034244,
+     "n_genes": 268,
+     "layer": "mutation_missense",
+     "ratio": 1.16804,
+     "top_genes": "HECW1:52,PLCB1:42,TRRAP:42,AMER1:34,KMT2D:31"
+    },
+    {
+     "set": "REACTOME_CA2_PATHWAY",
+     "q": 0.034244,
+     "n_genes": 62,
+     "layer": "mutation_missense",
+     "ratio": 1.36653,
+     "top_genes": "PLCB1:42,ITPR2:28,TNRC6A:24,CTNNB1:20,PRKG1:20"
+    },
+    {
+     "set": "REACTOME_CELL_SURFACE_INTERACTIONS_AT_THE_VASCULAR_WALL",
+     "q": 0.034244,
+     "n_genes": 132,
+     "layer": "mutation_missense",
+     "ratio": 1.21756,
+     "top_genes": "APOB:105,ITGAX:44,L1CAM:42,ITGA4:33,COL1A2:31"
+    },
+    {
+     "set": "REACTOME_RMTS_METHYLATE_HISTONE_ARGININES",
+     "q": 0.041834,
+     "n_genes": 30,
+     "layer": "mutation_missense",
+     "ratio": 1.56849,
+     "top_genes": "ARID1B:25,SMARCA2:23,DNMT3A:17,JAK2:14,SMARCC2:9"
+    },
+    {
+     "set": "REACTOME_NOTCH4_ACTIVATION_AND_TRANSMISSION_OF_SIGNAL_TO_THE_NUCLEUS",
+     "q": 0.0445501,
+     "n_genes": 11,
+     "layer": "mutation_missense",
+     "ratio": 1.93101,
+     "top_genes": "NOTCH4:53,NCSTN:12,JAG1:10,ADAM10:6,PSEN2:6"
+    },
+    {
+     "set": "REACTOME_BETA_CATENIN_INDEPENDENT_WNT_SIGNALING",
+     "q": 0.0505472,
+     "n_genes": 145,
+     "layer": "mutation_missense",
+     "ratio": 1.22988,
+     "top_genes": "PLCB1:42,ROR2:31,ITPR2:28,TNRC6A:24,PRKCB:23"
+    },
+    {
+     "set": "REACTOME_DAP12_SIGNALING",
+     "q": 0.0505472,
+     "n_genes": 29,
+     "layer": "mutation",
+     "ratio": 1.50251,
+     "top_genes": "VAV3:31,PIK3CA:28,BTK:22,PLCG2:19,SOS1:13"
+    },
+    {
+     "set": "REACTOME_EPH_EPHRIN_MEDIATED_REPULSION_OF_CELLS",
+     "q": 0.0505472,
+     "n_genes": 51,
+     "layer": "mutation",
+     "ratio": 1.3056,
+     "top_genes": "EPHA5:71,TIAM1:58,EPHA3:54,EPHB6:51,EPHA6:47"
+    },
+    {
+     "set": "REACTOME_DAP12_INTERACTIONS",
+     "q": 0.074774,
+     "n_genes": 39,
+     "layer": "mutation",
+     "ratio": 1.41475,
+     "top_genes": "VAV3:31,PIK3CA:28,BTK:22,PLCG2:19,SOS1:13"
+    }
+   ],
+   "events": 59,
+   "pairs": 1694,
+   "exclusive": [
+    {
+     "a": "KRAS",
+     "b": "EGFR",
+     "both": 1,
+     "expected": 19.316,
+     "q": 6.78077e-05
+    }
+   ],
+   "cooccurring": [],
+   "background": {
+    "source": "covariates",
+    "features": 20,
+    "genes_without_covariates": 125,
+    "mutation_missense": {
+     "genes_fitted": 19942,
+     "omega_quantiles": [
+      0.840123261309797,
+      1.0015866046470923,
+      1.2057603076268015
+     ]
+    },
+    "mutation_truncating": {
+     "genes_fitted": 19942,
+     "omega_quantiles": [
+      0.7352095380069912,
+      0.8999999098124831,
+      1.0961485892210658
+     ]
+    }
+   },
+   "theta_used": 3.1766209770289064,
+   "theta_mle": 3.3283500659140386
+  },
+  "BRCA": {
+   "long_tail_sets": 1,
+   "long_tail_sets_without_cgc": 0,
+   "long_tail": [
+    {
+     "set": "REACTOME_NEURONAL_SYSTEM",
+     "q": 0.0728432,
+     "n_genes": 403,
+     "layer": "mutation_missense",
+     "ratio": 1.12889,
+     "top_genes": "CACNA1E:34,CACNA1A:22,PTPRD:21,CACNA1B:19,ABCC9:15"
+    }
+   ],
+   "events": 33,
+   "pairs": 528,
+   "exclusive": [
+    {
+     "a": "CDH1",
+     "b": "TP53",
+     "both": 9,
+     "expected": 43.6289,
+     "q": 8.79917e-09
+    },
+    {
+     "a": "GATA3",
+     "b": "TP53",
+     "both": 11,
+     "expected": 41.4905,
+     "q": 4.94819e-07
+    },
+    {
+     "a": "PIK3CA",
+     "b": "TP53",
+     "both": 80,
+     "expected": 118.011,
+     "q": 0.00132649
+    },
+    {
+     "a": "FOXA1",
+     "b": "TP53",
+     "both": 1,
+     "expected": 11.865,
+     "q": 0.00167781
+    },
+    {
+     "a": "MAP3K1",
+     "b": "TP53",
+     "both": 10,
+     "expected": 26.8116,
+     "q": 0.00262711
+    },
+    {
+     "a": "ARID1A",
+     "b": "TP53",
+     "both": 6,
+     "expected": 16.5292,
+     "q": 0.0322481
+    },
+    {
+     "a": "PIK3CA",
+     "b": "AKT1",
+     "both": 2,
+     "expected": 9.26244,
+     "q": 0.0571455
+    },
+    {
+     "a": "TP53",
+     "b": "SPEN",
+     "both": 7,
+     "expected": 16.0243,
+     "q": 0.0721866
+    }
+   ],
+   "cooccurring": [
+    {
+     "a": "AKT1",
+     "b": "CTCF",
+     "both": 6,
+     "expected": 0.61199,
+     "q": 0.0202273
+    },
+    {
+     "a": "CDH1",
+     "b": "ERBB2",
+     "both": 12,
+     "expected": 3.3939,
+     "q": 0.0501545
+    }
+   ],
+   "background": {
+    "source": "covariates",
+    "features": 20,
+    "genes_without_covariates": 125,
+    "mutation_missense": {
+     "genes_fitted": 19934,
+     "omega_quantiles": [
+      0.8654084436826353,
+      1.0542568893436775,
+      1.261273526903898
+     ]
+    },
+    "mutation_truncating": {
+     "genes_fitted": 19934,
+     "omega_quantiles": [
+      0.8191068662678769,
+      0.9943176984382069,
+      1.2258072212510218
+     ]
+    }
+   },
+   "theta_used": 8.083288784317075,
+   "theta_mle": 9.279241003464033
+  },
+  "COAD": {
+   "long_tail_sets": 0,
+   "long_tail_sets_without_cgc": 0,
+   "long_tail": [],
+   "events": 37,
+   "pairs": 666,
+   "exclusive": [
+    {
+     "a": "BRAF",
+     "b": "KRAS",
+     "both": 4,
+     "expected": 22.9311,
+     "q": 4.21559e-05
+    },
+    {
+     "a": "APC",
+     "b": "BRAF",
+     "both": 19,
+     "expected": 34.9069,
+     "q": 0.0526314
+    }
+   ],
+   "cooccurring": [],
+   "background": {
+    "source": "covariates",
+    "features": 20,
+    "genes_without_covariates": 125,
+    "mutation_missense": {
+     "genes_fitted": 19929,
+     "omega_quantiles": [
+      0.8880863243182346,
+      1.0350328400360158,
+      1.227455199843034
+     ]
+    },
+    "mutation_truncating": {
+     "genes_fitted": 19929,
+     "omega_quantiles": [
+      0.7901727354333798,
+      0.9720530704751794,
+      1.2644431732177475
+     ]
+    }
+   },
+   "theta_used": 7.110153849651229,
+   "theta_mle": 7.715002212012171
+  }
+ },
+ "timing": {
+  "KIRC": {
+   "drivers": 13,
+   "fork_seconds": 24.10579824447632,
+   "fork_cgc_seconds": 21.728229761123657,
+   "gsd_units": 1706
+  },
+  "LUAD": {
+   "drivers": 24,
+   "fork_seconds": 42.02802324295044,
+   "fork_cgc_seconds": 36.47900700569153,
+   "gsd_units": 1706
+  },
+  "BRCA": {
+   "drivers": 32,
+   "fork_seconds": 55.246734619140625,
+   "fork_cgc_seconds": 54.460644483566284,
+   "gsd_units": 1706
+  },
+  "COAD": {
+   "drivers": 37,
+   "fork_seconds": 35.213738679885864,
+   "fork_cgc_seconds": 30.568787574768066,
+   "gsd_units": 1706
+  }
+ }
+}

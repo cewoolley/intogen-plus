@@ -70,7 +70,9 @@ The gene sets of the pathway analysis (``pathways/gene_sets.tsv.gz``)
 are built from the pathways of `Reactome <https://reactome.org>`_
 and the hallmark gene sets of `MSigDB <https://www.gsea-msigdb.org>`_.
 Reactome is downloaded from its current release unless ``reactome_url``
-points to a specific one.
+points to a specific one. The epigenomic covariates of the genes used by dNdScv
+(``pathways/gene_covariates.tsv.gz``, for the background dN/dS of the gene set
+tests) are exported from the dNdScv container.
 
 Less important notes
 ********************

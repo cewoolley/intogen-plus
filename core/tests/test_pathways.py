@@ -3,6 +3,7 @@ import json
 import numpy as np
 import pandas as pd
 import pytest
+from scipy import stats
 from scipy.special import expit
 
 import synthetic_pathways
@@ -10,7 +11,8 @@ from intogen_core.omics.stats import (binomial_pmf, fisher_combine, poisson_bino
                                      upper_tail)
 from intogen_core.pathways import analysis, cooccurrence
 from intogen_core.pathways.genesets import GeneSets, read_gene_sets
-from intogen_core.pathways.selection import MUTATION_LAYERS, EventLayer, MutationLayer, estimate_theta
+from intogen_core.pathways.selection import (MUTATION_LAYERS, EventLayer, MutationLayer, background_omega,
+                                             estimate_theta)
 
 
 def neutral_genemuts(rng, n=600, theta=8.0, covariates=True):
@@ -110,15 +112,94 @@ def test_gene_sets(tmp_path):
     assert 'NEW' in sets.genes['BIG'] and 'NOPE' not in sets.genes['BIG']
 
 
-def test_background_model_keeps_margins():
+def burden_layer(rng, n_tumours=300, n_genes=400, sd=1.0):
+    """Passenger mutations whose probability grows with the (heterogeneous) burden of the tumours"""
+    log_burden = rng.normal(0, sd, n_tumours)
+    gene = rng.normal(-3.5, 0.7, n_genes)
+    hits = rng.uniform(size=(n_genes, n_tumours)) < expit(gene[:, None] + log_burden[None, :])
+    pairs = [(f'P{g}', f'T{t}') for g, t in zip(*np.nonzero(hits))]
+    return log_burden, pd.DataFrame(pairs, columns=['SYMBOL', 'SAMPLE']), [f'T{t}' for t in range(n_tumours)]
+
+
+def add_gene(rng, pairs, tumours, name, prob):
+    chosen = np.nonzero(rng.uniform(size=len(tumours)) < prob)[0]
+    return pd.concat([pairs, pd.DataFrame({'SYMBOL': name, 'SAMPLE': [tumours[i] for i in chosen]})])
+
+
+def test_event_probabilities_follow_burden():
     rng = np.random.default_rng(3)
-    hits = rng.uniform(size=(200, 80)) < expit(rng.normal(-3, 1, 200)[:, None] + rng.normal(0, 1, 80)[None, :])
-    hits[0] = True           # always altered
-    hits[1] = False          # never altered
-    p = cooccurrence.fit_background(hits)
-    assert np.allclose(p.sum(axis=1), hits.sum(axis=1), atol=1e-4)
-    assert np.allclose(p.sum(axis=0), hits.sum(axis=0), atol=1e-4)
-    assert (p[0] == 1).all() and (p[1] == 0).all()
+    log_burden, pairs, tumours = burden_layer(rng)
+    pairs = add_gene(rng, pairs, tumours, 'PASSENGER', expit(-1.5 + log_burden))
+    pairs = add_gene(rng, pairs, tumours, 'DRIVER', np.full(len(tumours), 0.2))
+    layer = cooccurrence.Layer('mutation', pairs, tumours)
+    order = np.argsort(layer.burden)
+    for gene, increasing in [('PASSENGER', True), ('DRIVER', False)]:
+        hits, prob = layer.event([gene])
+        assert prob.sum() == pytest.approx(hits.sum(), rel=1e-6)          # margins are kept
+        ratio = prob[order[-50:]].mean() / prob[order[:50]].mean()
+        assert (ratio > 2) if increasing else (0.6 < ratio < 1.6)
+
+
+def test_cooccurrence_null_with_heterogeneous_burden():
+    """Burden-dependent passengers do not co-occur, and driver co-occurrence is detected"""
+    rng = np.random.default_rng(4)
+    null_p, fisher_p, power = [], [], []
+    for rep in range(60):
+        log_burden, pairs, tumours = burden_layer(rng)
+        for name in ['A', 'B']:           # independent passenger-like events
+            pairs = add_gene(rng, pairs, tumours, name, expit(-1.5 + log_burden))
+        x = rng.uniform(size=len(tumours)) < 0.15                 # driver-like events, planted co-occurrence
+        y = rng.uniform(size=len(tumours)) < np.where(x, 0.45, 0.12)
+        pairs = pd.concat([pairs, pd.DataFrame({'SYMBOL': 'X', 'SAMPLE': np.array(tumours)[x]}),
+                           pd.DataFrame({'SYMBOL': 'Y', 'SAMPLE': np.array(tumours)[y]})])
+        layer = cooccurrence.Layer('mutation', pairs, tumours)
+        layers = {'mutation': layer}
+        tested = cooccurrence.test_pairs([cooccurrence.Event('mutation', 'gene', g, g, [g], 0) for g in 'AB'], layers)
+        null_p.append(tested['P_VALUE'].iloc[0])
+        a, b = layer.hits[layer.gene_index['A']], layer.hits[layer.gene_index['B']]
+        fisher_p.append(stats.fisher_exact([[np.sum(a & b), np.sum(a & ~b)], [np.sum(~a & b), np.sum(~a & ~b)]],
+                                           alternative='greater')[1])
+        tested = cooccurrence.test_pairs([cooccurrence.Event('mutation', 'gene', g, g, [g], 0) for g in 'XY'], layers)
+        power.append(tested['P_VALUE'].iloc[0])
+    assert np.mean(np.array(null_p) < 0.05) <= 0.1
+    assert np.mean(np.array(fisher_p) < 0.05) > 0.3              # a test that ignores the burden is not valid
+    assert np.mean(np.array(power) < 0.05) > 0.8
+
+
+def test_mutual_exclusivity():
+    rng = np.random.default_rng(5)
+    log_burden, pairs, tumours = burden_layer(rng)
+    x = rng.uniform(size=len(tumours)) < 0.25
+    y = ~x & (rng.uniform(size=len(tumours)) < 0.3)              # alternative alterations of a pathway
+    pairs = pd.concat([pairs, pd.DataFrame({'SYMBOL': 'X', 'SAMPLE': np.array(tumours)[x]}),
+                       pd.DataFrame({'SYMBOL': 'Y', 'SAMPLE': np.array(tumours)[y]})])
+    candidates = [cooccurrence.Event('mutation', 'gene', g, g, [g], 0) for g in 'XY']
+    pairs, _ = cooccurrence.run(candidates, {'mutation': cooccurrence.Layer('mutation', pairs, tumours)})
+    row = pairs.iloc[0]
+    assert row['TUMOURS_BOTH'] == 0 and row['EXPECTED_BOTH'] > 10
+    assert row['Q_VALUE_EXCLUSIVITY'] < 1e-6 and row['P_VALUE'] == 1 and pd.isna(row['MODULE'])
+
+
+def test_background_omega():
+    """Gene sets are compared with genes of similar genomic context"""
+    rng = np.random.default_rng(6)
+    df = neutral_genemuts(rng, n=3000)
+    context = pd.DataFrame({'SILENT': rng.normal(size=len(df))}, index=df['gene_name'])
+    # genes in a closed-chromatin context have a higher dN/dS without selection (e.g. not expressed)
+    omega = np.where(context['SILENT'].values > 1, 1.3, 1.0)
+    for k in ['mis', 'non', 'spl']:
+        df[f'n_{k}'] = rng.poisson(df[f'exp_{k}'] * df['exp_syn_cv'] / df['exp_syn'] * omega)
+    closed = list(df['gene_name'][context['SILENT'].values > 1][:150])
+    adjusted, info = background_omega(df, covariates=context)
+    assert info['source'] == 'covariates' and info['mutation_missense']['genes_fitted'] == 3000
+    before, after = MutationLayer(df, 'mutation'), MutationLayer(adjusted, 'mutation')
+    assert before.test(closed)['P_VALUE'] < 1e-4                 # an artefact of the genomic context
+    assert after.test(closed)['P_VALUE'] > 0.01
+    # selection beyond the context is still detected
+    selected = list(df['gene_name'][context['SILENT'].values < 0][:60])
+    spiked = adjusted.set_index('gene_name')
+    spiked.loc[selected, 'n_mis'] += rng.poisson(spiked.loc[selected, 'exp_mis'] * 1.0)
+    assert MutationLayer(spiked.reset_index(), 'mutation').test(selected)['P_VALUE'] < 1e-4
 
 
 def test_tarone_bh():

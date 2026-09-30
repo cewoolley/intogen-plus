@@ -34,8 +34,8 @@ from intogen_core.omics.features import TRUNCATING, read_mutations
 from intogen_core.omics.stats import fdr_bh, fisher_combine, simes_combine
 from intogen_core.pathways import cooccurrence
 from intogen_core.pathways.genesets import GeneSets, read_gene_sets
-from intogen_core.pathways.selection import (MUTATION_LAYERS, MutationLayer, estimate_theta, expression_layers,
-                                             silencing_layer)
+from intogen_core.pathways.selection import (MUTATION_LAYERS, MutationLayer, background_omega, estimate_theta,
+                                             expression_layers, silencing_layer)
 
 
 SCOPES = ['all', 'long_tail']
@@ -91,9 +91,24 @@ def top_genes(layer, genes, n=5):
     return ','.join(f'{g}:{c}' for c, g in counts[:n])
 
 
+def read_covariates(path, symbol_map=None):
+    """Numeric covariates of the genes (first column: gene symbol)"""
+    df = pd.read_csv(path, sep='\t')
+    df = df.set_index(df.columns[0])
+    if symbol_map:
+        df.index = [symbol_map.get(g, g) for g in df.index]
+    df = df[~df.index.duplicated()]
+    return df.select_dtypes(include=[np.number])
+
+
 def load_layers(genemuts, mutations, vet, methylation=None, methylation_events=None, methylation_matrix=None,
-                expression=None, expression_events=None, expression_matrix=None, threshold=0.1):
+                expression=None, expression_events=None, expression_matrix=None, threshold=0.1,
+                background=True, covariates=None, symbol_map=None):
     """
+    Args:
+        background: compare the gene sets with genes of similar genomic context (background dN/dS)
+        covariates: gene covariates for the background dN/dS (default: those in genemuts)
+
     Returns:
         tests: dict layer -> (set test layer, individually significant genes)
         hits: dict layer -> cooccurrence.Layer (tumour alterations)
@@ -107,6 +122,12 @@ def load_layers(genemuts, mutations, vet, methylation=None, methylation_events=N
     genemuts = pd.read_csv(genemuts, sep='\t')
     tumours, mutated = mutation_hits(mutations)
     if len(genemuts) > 0:
+        nb = 'exp_syn_cv' in genemuts.columns and genemuts['exp_syn_cv'].notna().any()
+        if background and nb:
+            covs = read_covariates(covariates, symbol_map) if covariates is not None else None
+            genemuts, stats['mutation_background'] = background_omega(genemuts, exclude=significant, covariates=covs)
+        elif background:
+            stats['warning_background'] = 'No covariates in genemuts: gene sets compared with the neutral model'
         for name in MUTATION_LAYERS:
             layer = MutationLayer(genemuts, name)
             tests[name] = (layer, significant)
@@ -177,12 +198,13 @@ def candidate_events(results, gene_sets, tests, drivers, threshold):
             for gene in significant:
                 candidates.append(cooccurrence.Event(name, 'gene', gene, gene, [gene], 0.0))
 
-    # a gene set is an event in the layer where its long tail is most significant, with the
-    # alterations of that layer (e.g. truncating mutations for gene sets selected through them)
+    # a gene set is an event with the alterations of the layer where its long tail is most enriched among
+    # those where it is significant (e.g. truncating mutations for gene sets selected through them), which
+    # are the least diluted by passenger alterations
     long_tail = results[(results['SCOPE'] == 'long_tail') & (results['LAYER'] != 'combined') &
                         (results['Q_VALUE'] < threshold)]
     best = {}
-    for _, row in long_tail.sort_values(['Q_VALUE', 'P_VALUE', 'LAYER']).iterrows():
+    for _, row in long_tail.sort_values(['RATIO', 'Q_VALUE', 'LAYER'], ascending=[False, True, True]).iterrows():
         best.setdefault((row['SET'], cooccurrence.family(row['LAYER'])), row)
     for (set_id, _), row in sorted(best.items()):
         layer, significant = tests[row['LAYER']]
@@ -219,12 +241,15 @@ def pathways_by_gene(results, gene_sets, pairs, events, threshold):
 
 
 def run(genemuts, mutations, vet, gene_sets, output, cooccurrence_output, genes_output,
-        min_size=10, max_size=500, threshold=0.1, min_tumours=3, max_events=100, symbol_map=None, **omics):
-    tests, hits, drivers, stats = load_layers(genemuts, mutations, vet, threshold=threshold, **omics)
+        min_size=10, max_size=500, threshold=0.1, min_tumours=3, max_events=100, symbol_map=None,
+        background=True, covariates=None, **omics):
+    symbols = io.load_symbol_map(symbol_map)
+    tests, hits, drivers, stats = load_layers(genemuts, mutations, vet, threshold=threshold, background=background,
+                                              covariates=covariates, symbol_map=symbols, **omics)
 
     universe = set().union(*[layer.universe for layer, _ in tests.values()]) if tests else set()
     sets = GeneSets(read_gene_sets(gene_sets), universe, min_size=min_size, max_size=max_size,
-                    symbol_map=io.load_symbol_map(symbol_map))
+                    symbol_map=symbols)
     stats['gene_sets'] = len(sets)
     stats['gene_sets_discarded_by_size'] = sets.discarded
 
@@ -244,11 +269,12 @@ def run(genemuts, mutations, vet, gene_sets, output, cooccurrence_output, genes_
     stats['cooccurrence_pairs'] = int(len(pairs))
     stats['cooccurrence_testable_pairs'] = int(pairs['TESTABLE'].sum()) if len(pairs) else 0
     stats['cooccurrence_significant_pairs'] = int((pairs['Q_VALUE'] < threshold).sum()) if len(pairs) else 0
+    stats['exclusivity_significant_pairs'] = int((pairs['Q_VALUE_EXCLUSIVITY'] < threshold).sum()) if len(pairs) else 0
     io.write_stats(output + '.stats.json', stats)
 
 
 def summary(files, pathways_output, cooccurrence_output, modules_output, threshold=0.1):
-    """Significant gene sets, co-occurring events and modules of all cohorts"""
+    """Significant gene sets, co-occurring or mutually exclusive events and modules of all cohorts"""
     pathways, pairs = [], []
     for file in files:
         cohort = os.path.basename(file).split('.')[0]
@@ -281,11 +307,12 @@ def summary(files, pathways_output, cooccurrence_output, modules_output, thresho
     io.write_table(wide, pathways_output)
 
     pairs = pd.concat(pairs) if pairs else pd.DataFrame(columns=cooccurrence.COLUMNS + ['COHORT'])
-    significant = pairs[pairs['Q_VALUE'] < threshold]
+    significant = pairs[(pairs['Q_VALUE'] < threshold) | (pairs['Q_VALUE_EXCLUSIVITY'] < threshold)]
     io.write_table(significant[['COHORT'] + cooccurrence.COLUMNS], cooccurrence_output)
 
     rows = []
-    for (cohort, module), group in significant.groupby(['COHORT', 'MODULE']):
+    cooccurring = significant[significant['Q_VALUE'] < threshold]
+    for (cohort, module), group in cooccurring.groupby(['COHORT', 'MODULE']):
         events = sorted(set(group['EVENT_1']) | set(group['EVENT_2']))
         rows.append([cohort, module, len(events), len(group), ';'.join(events)])
     io.write_table(pd.DataFrame(rows, columns=['COHORT', 'MODULE', 'N_EVENTS', 'N_PAIRS', 'EVENTS']), modules_output)
@@ -314,13 +341,20 @@ def summary(files, pathways_output, cooccurrence_output, modules_output, thresho
               help='Minimum tumours with an event to test its co-occurrence')
 @click.option('--max-events', type=int, default=100, show_default=True,
               help='Maximum events tested for co-occurrence (the most significant)')
-def cli(gene_sets, **kwargs):
+@click.option('--covariates', type=click.Path(exists=True), default=None,
+              help='Gene covariates for the background dN/dS. '
+                   'Default: $INTOGEN_DATASETS/pathways/gene_covariates.tsv.gz if it exists, else those in genemuts')
+@click.option('--background/--no-background', default=True, show_default=True,
+              help='Compare gene sets with genes of similar genomic context instead of with the neutral model')
+def cli(gene_sets, covariates, **kwargs):
     methylation = [kwargs[k] for k in ['methylation', 'methylation_events', 'methylation_matrix']]
     expression = [kwargs[k] for k in ['expression', 'expression_events', 'expression_matrix']]
     for layer in [methylation, expression]:
         if any(layer) and not all(layer):
             raise click.UsageError('Omics layers need the results, events and matrix files')
-    run(gene_sets=gene_sets or io.default_dataset('pathways', 'gene_sets.tsv.gz'),
+    if covariates is None:
+        covariates = io.default_dataset('pathways', 'gene_covariates.tsv.gz')
+    run(gene_sets=gene_sets or io.default_dataset('pathways', 'gene_sets.tsv.gz'), covariates=covariates,
         symbol_map=io.default_dataset('others', 'mapping_new_hugo_symbols.json'), **kwargs)
 
 

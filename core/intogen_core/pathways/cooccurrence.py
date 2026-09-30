@@ -1,5 +1,5 @@
 """
-Co-occurrence of dysregulation events in the same tumours.
+Co-occurrence and mutual exclusivity of dysregulation events in the same tumours.
 
 Events are alterations of a gene or of a gene set in a layer:
 
@@ -9,17 +9,25 @@ Events are alterations of a gene or of a gene set in a layer:
 - ``expression_over`` / ``expression_under``: expression outliers
 
 Tumours with many alterations (e.g. hypermutated or methylator tumours) have
-many events, which makes any pair of events co-occur in them. As in DISCOVER
-(Canisius et al., Genome Biology 2016), the probability that gene ``g`` is
-altered in tumour ``s`` is estimated with a model that preserves both the
-alteration frequency of each gene and the alteration burden of each tumour::
+many events, which makes any pair of events co-occur in them. How much the
+probability of an event depends on the alteration burden of the tumour differs
+between events: passenger-rich events are proportional to the burden, while
+the selected alterations of drivers barely depend on it, or even decrease with it
+(e.g. EGFR mutations in lung adenocarcinomas of non-smokers). Models that
+impose the same dependence on all the genes, such as the additive model of
+DISCOVER (Canisius et al., Genome Biology 2016), make driver co-occurrence
+undetectable and passengers co-occur in tumours with heterogeneous burdens.
+Each event is therefore given its own burden elasticity: the probability that
+the event happens in tumour ``s`` is estimated with a logistic regression on
+the burden of the tumour in the layer of the event (number of altered genes,
+without the genes of the event)::
 
-    p_gs = 1 / (1 + exp(-(a_g + b_s)))
+    q_s = 1 / (1 + exp(-(a + b * log(1 + burden_s))))
 
-fitted independently for each layer. The probability that an event (a set of
-genes) happens in a tumour is ``1 - prod(1 - p_gs)``. Under independence, the
-number of tumours with both events follows a Poisson-binomial distribution
-with parameters ``q1_s * q2_s``, which gives the co-occurrence p-value.
+Under independence given the burden, the number of tumours with both events
+follows a Poisson-binomial distribution with probabilities ``q1_s * q2_s``. Its
+upper tail gives the co-occurrence p-value and its lower tail the mutual
+exclusivity p-value.
 
 Within a layer (the mutation layers count as one), the genes shared by two
 events are removed from both, so that overlapping gene sets do not co-occur
@@ -33,7 +41,6 @@ Pairs of events that co-occur significantly are grouped into modules
 """
 
 import itertools
-import warnings
 
 import numpy as np
 import pandas as pd
@@ -43,47 +50,28 @@ from intogen_core.omics.stats import fdr_bh, poisson_binomial_tail
 
 
 COLUMNS = ['EVENT_1', 'NAME_1', 'EVENT_2', 'NAME_2', 'TUMOURS', 'TUMOURS_1', 'TUMOURS_2', 'TUMOURS_BOTH',
-           'EXPECTED_BOTH', 'RATIO', 'P_VALUE', 'Q_VALUE', 'SHARED_GENES_REMOVED', 'MODULE', 'TESTABLE']
+           'EXPECTED_BOTH', 'RATIO', 'P_VALUE', 'Q_VALUE', 'P_VALUE_EXCLUSIVITY', 'Q_VALUE_EXCLUSIVITY',
+           'SHARED_GENES_REMOVED', 'MODULE', 'TESTABLE', 'TESTABLE_EXCLUSIVITY']
 
 
-def fit_background(hits, max_iter=500, tol=1e-6):
+def event_probabilities(hits, log_burden, ridge=1e-4, max_iter=100):
     """
-    Probability of alteration of each gene in each tumour, preserving the
-    number of altered tumours of each gene and of altered genes of each tumour.
-
-    Args:
-        hits: bool array genes x tumours
-
-    Returns:
-        array of probabilities (genes x tumours)
+    Probability of an event in each tumour, from a logistic regression of its
+    occurrence on the (log) alteration burden of the tumours.
     """
-    hits = np.asarray(hits, dtype=bool)
-    n_genes, n_tumours = hits.shape
-    rows, cols = hits.sum(axis=1), hits.sum(axis=0)
-    p = np.zeros(hits.shape)
-    p[rows == n_tumours, :] = 1.0
-    p[:, cols == n_genes] = 1.0
-    fit_rows = (rows > 0) & (rows < n_tumours)
-    fit_cols = (cols > 0) & (cols < n_genes)
-    if not fit_rows.any() or not fit_cols.any():
-        return p
-
-    sub = hits[np.ix_(fit_rows, fit_cols)].astype(float)
-    r, c = sub.sum(axis=1), sub.sum(axis=0)
-    a = logit(np.clip(r / sub.shape[1], 1e-6, 1 - 1e-6))
-    b = np.zeros(sub.shape[1])
+    h = np.asarray(hits, dtype=float)
+    if h.sum() == 0 or h.sum() == len(h):
+        return h
+    X = np.column_stack([np.ones(len(h)), log_burden])
+    beta = np.array([logit(h.mean()), 0.0])
+    penalty = np.diag([0.0, ridge])
     for _ in range(max_iter):
-        q = expit(a[:, None] + b[None, :])
-        w = q * (1 - q)
-        a += np.clip((r - q.sum(axis=1)) / np.maximum(w.sum(axis=1), 1e-12), -5, 5)
-        q = expit(a[:, None] + b[None, :])
-        w = q * (1 - q)
-        b += np.clip((c - q.sum(axis=0)) / np.maximum(w.sum(axis=0), 1e-12), -5, 5)
-        q = expit(a[:, None] + b[None, :])
-        if max(np.abs(q.sum(axis=1) - r).max(), np.abs(q.sum(axis=0) - c).max()) < tol:
+        p = expit(X @ beta)
+        step = np.linalg.solve((X * (p * (1 - p))[:, None]).T @ X + penalty, X.T @ (h - p) - penalty @ beta)
+        beta += step
+        if np.abs(step).max() < 1e-9:
             break
-    p[np.ix_(fit_rows, fit_cols)] = q
-    return p
+    return expit(X @ beta)
 
 
 class Layer:
@@ -104,17 +92,7 @@ class Layer:
         self.gene_index = {g: i for i, g in enumerate(self.genes)}
         self.hits = np.zeros((len(self.genes), len(self.tumours)), dtype=bool)
         self.hits[pairs['SYMBOL'].map(self.gene_index).values, pairs['SAMPLE'].map(tumour_index).values] = True
-        self._log_absent = None
-
-    @property
-    def log_absent(self):
-        """log(1 - p) of the background model (fitted when first needed)"""
-        if self._log_absent is None:
-            self.p = fit_background(self.hits)
-            with warnings.catch_warnings():
-                warnings.simplefilter('ignore', category=RuntimeWarning)
-                self._log_absent = np.log1p(-self.p)
-        return self._log_absent
+        self.burden = self.hits.sum(axis=0)
 
     def altered_tumours(self, genes):
         """Number of tumours with an alteration in any of the genes"""
@@ -127,8 +105,8 @@ class Layer:
         if len(idx) == 0:
             return np.zeros(len(self.tumours), dtype=bool), np.zeros(len(self.tumours))
         hits = self.hits[idx].any(axis=0)
-        prob = -np.expm1(self.log_absent[idx].sum(axis=0))
-        return hits, prob
+        own = self.hits[idx].sum(axis=0)
+        return hits, event_probabilities(hits, np.log1p(self.burden - own))
 
 
 class Event:
@@ -160,7 +138,7 @@ def overlap_removed(layer1, layer2):
 
 def test_pairs(events, layers, min_tumours=3):
     """
-    Co-occurrence test of every pair of events.
+    Co-occurrence and mutual exclusivity tests of every pair of events.
 
     Args:
         events: list of Event
@@ -198,15 +176,16 @@ def test_pairs(events, layers, min_tumours=3):
         both = int((h1 & h2).sum())
         probs = q1 * q2
         expected = float(probs.sum())
-        tail = poisson_binomial_tail(probs)
-        p_value = float(tail[both])
-        # smallest p-value achievable given how often each event happens
-        p_min = float(tail[min(int(h1.sum()), int(h2.sum()))])
-        rows.append([e1.identifier, e1.name, e2.identifier, e2.name, len(i1), int(h1.sum()), int(h2.sum()),
-                     both, expected, both / expected if expected > 0 else np.nan, p_value, np.nan, shared, None,
-                     None, p_min])
+        tail = np.append(poisson_binomial_tail(probs), 0.0)     # tail[k] = P(X >= k)
+        n1, n2 = int(h1.sum()), int(h2.sum())
+        # smallest p-values achievable given how often each event happens
+        p_min = float(tail[min(n1, n2)])
+        p_min_exclusivity = float(1 - tail[max(0, n1 + n2 - len(i1)) + 1])
+        rows.append([e1.identifier, e1.name, e2.identifier, e2.name, len(i1), n1, n2, both, expected,
+                     both / expected if expected > 0 else np.nan, float(tail[both]), np.nan,
+                     float(1 - tail[both + 1]), np.nan, shared, None, None, None, p_min, p_min_exclusivity])
 
-    return pd.DataFrame(rows, columns=COLUMNS + ['P_MIN'])
+    return pd.DataFrame(rows, columns=COLUMNS + ['P_MIN', 'P_MIN_EXCLUSIVITY'])
 
 
 def tarone_bh(p_values, p_min, alpha):
@@ -265,8 +244,12 @@ def run(candidates, layers, max_events=100, min_tumours=3, threshold=0.1):
     events = select_events(candidates, layers, max_events=max_events, min_tumours=min_tumours)
     pairs = test_pairs(events, layers, min_tumours=min_tumours)
     pairs['Q_VALUE'], pairs['TESTABLE'] = tarone_bh(pairs['P_VALUE'].values, pairs['P_MIN'].values, threshold)
+    pairs['Q_VALUE_EXCLUSIVITY'], pairs['TESTABLE_EXCLUSIVITY'] = tarone_bh(
+        pairs['P_VALUE_EXCLUSIVITY'].values, pairs['P_MIN_EXCLUSIVITY'].values, threshold)
+    pairs['MIN_P'] = pairs[['P_VALUE', 'P_VALUE_EXCLUSIVITY']].min(axis=1)
+    pairs = pairs.sort_values(['MIN_P', 'EVENT_1', 'EVENT_2'])
     pairs = pairs[COLUMNS]
     membership = modules(pairs, threshold=threshold)
     significant = pairs['Q_VALUE'] < threshold
     pairs.loc[significant, 'MODULE'] = pairs.loc[significant, 'EVENT_1'].map(membership)
-    return pairs.sort_values(['P_VALUE', 'EVENT_1', 'EVENT_2']), events
+    return pairs, events

@@ -117,8 +117,8 @@ By default this pipeline outputs 4 files:
   :file:`unfiltered_drivers.tsv` (see :doc:`omics`).
 - :file:`pathways.tsv`, :file:`pathway_cooccurrence.tsv` and :file:`pathway_modules.tsv`:
   only with ``--pathways true``. Gene sets under selection (with and without their
-  individually significant genes) and co-occurring dysregulation events and
-  their modules. In addition, the significant gene sets and modules of each driver
+  individually significant genes), co-occurring or mutually exclusive
+  dysregulation events and the modules of co-occurring events. In addition, the significant gene sets and modules of each driver
   are added to :file:`drivers.tsv` (see :doc:`pathways`).
 
 Those files can be found in the path indicated with the

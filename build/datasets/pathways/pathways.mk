@@ -34,3 +34,14 @@ $(GENE_SETS): ${pathways_data_srcdir}/gene_sets.py $(REACTOME_GMT) $(HALLMARKS_G
 
 
 DATASETS += $(GENE_SETS)
+
+# Epigenomic covariates of the genes used by dNdScv, for the background dN/dS of the gene set tests
+GENE_COVARIATES = $(pathways_dir)/gene_covariates.tsv.gz
+$(GENE_COVARIATES): $$(DNDSCV_CONTAINER) | $(pathways_dir)
+	@echo Exporting the gene covariates of dNdScv
+	echo "library(dndscv); data('covariates_hg19_hg38_epigenome_pcawg', package = 'dndscv'); \
+		write.table(data.frame(SYMBOL = rownames(covs), covs), gzfile('$@'), sep = '\t', quote = FALSE, row.names = FALSE)" | \
+		singularity exec $(DNDSCV_CONTAINER) R --no-save
+
+
+DATASETS += $(GENE_COVARIATES)

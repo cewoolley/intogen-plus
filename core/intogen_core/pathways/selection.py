@@ -23,6 +23,19 @@ Mutations (``mutation``, ``mutation_missense``, ``mutation_truncating``)
     The ratio reported is the observed/expected number of non-synonymous
     mutations (dN/dS of the set).
 
+    Background dN/dS (competitive null, ``nb``): in real exomes, the dN/dS of
+    genes that are not under positive selection departs from 1 in a way that
+    depends on their genomic context (e.g. genes not expressed in the tissue,
+    with no purifying selection nor transcription-coupled repair, have dN/dS
+    of 1.1-1.2 with the global mutational model). Summed over hundreds of genes,
+    these small deviations make large gene sets significant (neuronal, muscle or
+    extracellular matrix genes). The expected non-synonymous mutations of each
+    gene are therefore multiplied by the background dN/dS of genes with a
+    similar context, predicted with a Poisson regression on genomic covariates
+    (by default, the epigenomic covariates used by dNdScv) fitted on the genes
+    that are not individually significant. Gene sets are thus compared with
+    comparable genes rather than with the neutral model.
+
 Omics layers (``silencing``, ``expression_over``, ``expression_under``)
     The number of events (e.g. hypermethylated tumours) of the genes of a set
     is compared with the number expected given the event rate of each tumour
@@ -32,6 +45,7 @@ Omics layers (``silencing``, ``expression_over``, ``expression_under``)
 """
 
 import numpy as np
+import pandas as pd
 from scipy import optimize
 from scipy import stats as sps
 
@@ -43,6 +57,9 @@ MUTATION_LAYERS = {
     'mutation_missense': (['n_mis'], ['exp_mis']),
     'mutation_truncating': (['n_non', 'n_spl'], ['exp_non', 'exp_spl']),
 }
+
+# classes of mutations with their own background dN/dS
+BACKGROUND_CLASSES = {'mutation_missense': ['exp_mis'], 'mutation_truncating': ['exp_non', 'exp_spl']}
 
 OMICS_LAYERS = ['silencing', 'expression_over', 'expression_under']
 
@@ -117,6 +134,13 @@ class MutationLayer:
     def observed(self, gene):
         return self.data[gene][0] if gene in self.data else 0
 
+    def neutral_mean(self, gene):
+        """Expected non-synonymous mutations of a gene under neutrality given its local rate (nb)"""
+        x, s, e, es, mu = self.data[gene]
+        if np.isinf(self.theta):
+            return e * mu / es
+        return e * (self.theta + s) / (self.theta * es / mu + es)
+
     def _gene_null(self, gene):
         """Null distribution (pmf) and mean of the non-synonymous mutations of a gene"""
         null = self._null.get(gene)
@@ -143,7 +167,7 @@ class MutationLayer:
         return null
 
     def test(self, genes):
-        genes = [g for g in genes if g in self.data]
+        genes = sorted(g for g in genes if g in self.data)
         if self.method == 'conditional':
             genes_tested = [g for g in genes if self.data[g][0] + self.data[g][1] > 0]
         else:
@@ -177,7 +201,7 @@ class EventLayer:
         return self.data[gene][0] if gene in self.data else 0
 
     def test(self, genes):
-        genes = [g for g in genes if g in self.data]
+        genes = sorted(g for g in genes if g in self.data)
         observed = sum(self.data[g][0] for g in genes)
         expected = sum(self.data[g][1] for g in genes)
         if len(genes) == 0:
@@ -216,3 +240,69 @@ def expression_layers(results, threshold=0.1):
                            df[f'EXPECTED_{direction.upper()}'])
         layers[f'expression_{direction}'] = (layer, significant)
     return layers
+
+
+def poisson_regression(y, offset, X, ridge=1.0, max_iter=100):
+    """Poisson regression with an offset, an intercept and ridge-penalised coefficients (Newton-Raphson)"""
+    X = np.column_stack([np.ones(len(y)), X])
+    penalty = ridge * np.diag(np.r_[0.0, np.ones(X.shape[1] - 1)])
+    beta = np.zeros(X.shape[1])
+    beta[0] = np.log(max(y.sum(), 0.5) / np.exp(offset).sum())
+    for _ in range(max_iter):
+        mu = np.exp(np.clip(offset + X @ beta, -50, 50))
+        step = np.linalg.solve((X * mu[:, None]).T @ X + penalty, X.T @ (y - mu) - penalty @ beta)
+        beta += step
+        if np.abs(step).max() < 1e-8:
+            break
+    return beta
+
+
+def genemuts_features(genemuts):
+    """Covariates available in genemuts: covariate-predicted relative mutation rate and gene size"""
+    rel = np.log(genemuts['exp_syn_cv'] / genemuts['exp_syn'])
+    size = np.log(genemuts['exp_syn'])
+    return pd.DataFrame({'rate': rel, 'size': size, 'rate2': rel ** 2, 'size2': size ** 2, 'rate_size': rel * size})
+
+
+def background_omega(genemuts, exclude=(), covariates=None, ridge=1.0, bounds=(0.5, 2.0)):
+    """
+    Background dN/dS of each gene given its genomic context.
+
+    Args:
+        genemuts: dNdScv genemuts (with exp_syn_cv)
+        exclude: genes left out of the fit (individually significant)
+        covariates: DataFrame of numeric covariates indexed by gene (default: genemuts_features)
+
+    Returns:
+        genemuts with the expected non-synonymous mutations multiplied by the background dN/dS,
+        and a dict describing the fit
+    """
+    genes = genemuts['gene_name'].values
+    if covariates is None:
+        features, source = genemuts_features(genemuts), 'genemuts'
+        features.index = genes
+    else:
+        features, source = covariates.reindex(genes), 'covariates'
+    features = features.replace([np.inf, -np.inf], np.nan)
+    missing = features.isna().any(axis=1).values
+    features = ((features - features.mean()) / features.std().replace(0, 1)).fillna(0.0)
+    info = {'source': source, 'features': int(features.shape[1]), 'genes_without_covariates': int(missing.sum())}
+
+    adjusted = genemuts.copy()
+    excluded = set(exclude)
+    for name, columns in BACKGROUND_CLASSES.items():
+        layer = MutationLayer(genemuts, name, method='nb')
+        offset = np.full(len(genes), np.nan)
+        observed = np.zeros(len(genes))
+        for i, g in enumerate(genes):
+            if g in layer.data:
+                offset[i] = np.log(layer.neutral_mean(g)) if layer.neutral_mean(g) > 0 else np.nan
+                observed[i] = layer.data[g][0]
+        fit = np.isfinite(offset) & ~missing & ~np.isin(genes, list(excluded))
+        beta = poisson_regression(observed[fit], offset[fit], features.values[fit], ridge=ridge)
+        omega = np.clip(np.exp(np.column_stack([np.ones(len(genes)), features.values]) @ beta), *bounds)
+        for c in columns:
+            adjusted[c] = adjusted[c] * omega
+        info[name] = {'genes_fitted': int(fit.sum()),
+                      'omega_quantiles': [float(q) for q in np.quantile(omega[fit], [0.05, 0.5, 0.95])]}
+    return adjusted, info

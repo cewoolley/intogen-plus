@@ -62,11 +62,14 @@ With `--pathways true`, IntOGen also tests whether gene sets (Reactome pathways 
 MSigDB hallmarks, or custom ones with `--gene_sets`) are under selection beyond their
 individually significant genes (the *long tail* of rarely altered genes), in the mutations
 (all, missense or truncating) and, when provided, in the epigenetic silencing and
-expression outliers. Then it finds drivers, silenced or dysregulated genes and pathways
-that are altered together in the same tumours more often than expected, and groups them
-into modules (`pathways.tsv`, `pathway_cooccurrence.tsv` and `pathway_modules.tsv`).
-Sequencing data alone are enough: the omics layers are added when available.
-See `docs/source/pathways.rst`.
+expression outliers. Gene sets are compared with genes of similar genomic context, which
+avoids the false positives of large sets of genes not expressed in the tissue. Then it finds
+drivers, silenced or dysregulated genes and pathways that are altered together in the same
+tumours more (or less: mutual exclusivity) often than expected given the alteration burden
+of the tumours, and groups the co-occurring ones into modules (`pathways.tsv`,
+`pathway_cooccurrence.tsv` and `pathway_modules.tsv`). Sequencing data alone are enough:
+the omics layers are added when available. See `docs/source/pathways.rst` and the
+evaluation on TCGA exomes in `benchmarks/tcga_case_study`.
 
 [comment]: <> (FIXME add example in test)
 
