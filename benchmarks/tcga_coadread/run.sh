@@ -13,6 +13,7 @@ $PYTHON crc_pathways.py ALL MSS MSI
 $PYTHON crc_networks.py
 $PYTHON crc_robust.py
 $PYTHON crc_coregulators.py
+$PYTHON crc_coregulators_clinical.py
 $PYTHON crc_immune.py
 $PYTHON crc_power.py
 $PYTHON crc_summary.py

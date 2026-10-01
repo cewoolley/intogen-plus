@@ -35,7 +35,9 @@ out <- rbindlist(lapply(c("COAD", "READ"), function(c) {
   idcol <- intersect(c("Tumor_Sample_Barcode", "bcr_patient_barcode", "patient_id"), names(cl))[1]
   cl[, .(PATIENT = substr(get(idcol), 1, 12), PROJECT = c, SITE = anatomic_neoplasm_subdivision,
          MMR_IHC_LOSS = loss_expression_of_mismatch_repair_proteins_by_ihc, HISTOLOGY = histological_type,
-         STAGE = pathologic_stage, AGE = age_at_initial_pathologic_diagnosis, SEX = gender)]
+         STAGE = pathologic_stage, AGE = age_at_initial_pathologic_diagnosis, SEX = gender,
+         # TCGA Pan-Cancer Clinical Data Resource: curated stage and survival endpoints
+         CDR_STAGE = CDR_ajcc_pathologic_tumor_stage, OS = CDR_OS, OS_TIME = CDR_OS.time, PFI = CDR_PFI, PFI_TIME = CDR_PFI.time)]
 }))
 fwrite(out, "clinical.tsv", sep = "\t")
 print(table(out$PROJECT)); print(table(out$SITE, useNA = "ifany")); print(table(out$MMR_IHC_LOSS, out$PROJECT, useNA = "ifany")); print(table(out$HISTOLOGY))

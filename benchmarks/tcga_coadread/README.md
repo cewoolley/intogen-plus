@@ -34,7 +34,7 @@ export TCGAMUTATIONS=/path/to/TCGAmutations MSIGDBR_SYSDATA=/path/to/msigdbr/R/s
 
 | Step | Script | Output |
 |---|---|---|
-| mutations, read counts and clinical data | `mutations.R` | `coadread_mutations.tsv.gz`, `mutations_reads.tsv.gz`, `clinical.tsv` |
+| mutations, read counts, clinical data and TCGA CDR survival | `mutations.R` | `coadread_mutations.tsv.gz`, `mutations_reads.tsv.gz`, `clinical.tsv` |
 | MSS / MSI / POLE groups and location | `classify.py` | `tumour_groups.tsv` |
 | dNdScv per stratum (ALL, MSS, MSI), gene sets, covariates | `dnds.R` | `data/` |
 | curated CRC pathways | `gene_sets.py` | `gene_sets_crc.tsv.gz` |
@@ -42,6 +42,7 @@ export TCGAMUTATIONS=/path/to/TCGAmutations MSIGDBR_SYSDATA=/path/to/msigdbr/R/s
 | exhaustive pairs, location and MSI associations, coherence | `crc_networks.py` | `results/<STRATUM>/network_pairs.tsv.gz` |
 | location-stratified tests, composition of the co-regulator signal | `crc_robust.py` | `results/robustness.json` |
 | the co-regulator long tail of MSS tumours: genes, overlap of the selected sets, MC3 filters, allele fractions, tumours | `crc_coregulators.py` | `results/coregulators.json` |
+| stage IV and survival of co-regulator carriers: adjusted model, matched random genes, TCGA CDR endpoints | `crc_coregulators_clinical.py` | `results/coregulators_clinical.json` |
 | immune escape in hypermutated tumours | `crc_immune.py` | `results/immune_escape.json` |
 | detectable effect sizes (469 vs 2,023 tumours) | `crc_power.py` | `results/power.tsv` |
 | summary | `crc_summary.py` | `results/crc_summary.json` |

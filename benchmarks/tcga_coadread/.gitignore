@@ -2,5 +2,6 @@ data/
 results/*
 !results/crc_summary.json
 !results/coregulators.json
+!results/coregulators_clinical.json
 *.tsv
 *.tsv.gz
