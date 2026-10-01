@@ -1,0 +1,523 @@
+{
+ "cohort": {
+  "tumours": 553,
+  "groups": {
+   "MSS": 469,
+   "MSI": 73,
+   "POLE": 11
+  },
+  "group_source": "cohort",
+  "mss_excluded_by_dndscv": 0,
+  "mss_drivers": [
+   "ACVR2A",
+   "AMER1",
+   "AMY2A",
+   "APC",
+   "ARID1A",
+   "ATM",
+   "AXIN2",
+   "B2M",
+   "BCL9",
+   "BCL9L",
+   "BRAF",
+   "CTNNB1",
+   "ELF3",
+   "FBXW7",
+   "HNRNPAB",
+   "ING1",
+   "KRAS",
+   "MAP2K4",
+   "NRAS",
+   "PCBP1",
+   "PIK3CA",
+   "PIK3R1",
+   "PTEN",
+   "RBM10",
+   "RGMB",
+   "RNF43",
+   "SLITRK1",
+   "SMAD2",
+   "SMAD3",
+   "SMAD4",
+   "SOX9",
+   "TCF7L2",
+   "TGIF1",
+   "TP53",
+   "ZFP36L2"
+  ]
+ },
+ "H1": {
+  "observed": 38,
+  "expected": 5.1029697003768675,
+  "ratio": 7.446644254461006,
+  "ratio_ci95": [
+   4.779939688170582,
+   11.745988716101602
+  ],
+  "p_one_sided": 1.6827522260914686e-16,
+  "genes_tested": [
+   "EP300",
+   "CREBBP",
+   "KMT2C",
+   "KMT2B",
+   "SIN3A",
+   "ASXL1",
+   "ASXL2",
+   "USP9X",
+   "TNRC6B"
+  ],
+  "genes_missing": [],
+  "per_gene": [
+   {
+    "gene": "EP300",
+    "observed": 5,
+    "expected": 0.3877140013616286,
+    "cohort_driver": false,
+    "dndscv_qtrunc": 0.116107356415134
+   },
+   {
+    "gene": "CREBBP",
+    "observed": 3,
+    "expected": 0.9295883591379922,
+    "cohort_driver": false,
+    "dndscv_qtrunc": 0.9161201895927
+   },
+   {
+    "gene": "KMT2C",
+    "observed": 5,
+    "expected": 1.016891397587565,
+    "cohort_driver": false,
+    "dndscv_qtrunc": 0.9161201895927
+   },
+   {
+    "gene": "KMT2B",
+    "observed": 3,
+    "expected": 0.3308709582010955,
+    "cohort_driver": false,
+    "dndscv_qtrunc": 0.9161201895927
+   },
+   {
+    "gene": "SIN3A",
+    "observed": 4,
+    "expected": 0.3788533496110483,
+    "cohort_driver": false,
+    "dndscv_qtrunc": 0.49695562204252
+   },
+   {
+    "gene": "ASXL1",
+    "observed": 5,
+    "expected": 0.5246879791897638,
+    "cohort_driver": false,
+    "dndscv_qtrunc": 0.143357084372311
+   },
+   {
+    "gene": "ASXL2",
+    "observed": 3,
+    "expected": 0.200348105659795,
+    "cohort_driver": false,
+    "dndscv_qtrunc": 0.774319874770679
+   },
+   {
+    "gene": "USP9X",
+    "observed": 5,
+    "expected": 0.9365984369564287,
+    "cohort_driver": false,
+    "dndscv_qtrunc": 0.9161201895927
+   },
+   {
+    "gene": "TNRC6B",
+    "observed": 5,
+    "expected": 0.39741711267155033,
+    "cohort_driver": false,
+    "dndscv_qtrunc": 0.0885022507023403
+   }
+  ],
+  "background_fit": {
+   "source": "covariates",
+   "features": 20,
+   "genes_without_covariates": 125,
+   "mutation_missense": {
+    "genes_fitted": 19931,
+    "omega_quantiles": [
+     0.8084049390226958,
+     1.0423919162092967,
+     1.338315428996452
+    ]
+   },
+   "mutation_truncating": {
+    "genes_fitted": 19931,
+    "omega_quantiles": [
+     0.7080337103365082,
+     0.9928056731199939,
+     1.3513164288632504
+    ]
+   }
+  },
+  "drivers_excluded_from_fit": 35
+ },
+ "H2": {
+  "n": 451,
+  "odds_ratio": 2.7742364812415987,
+  "ci95": [
+   1.3455749367118581,
+   5.719776612857552
+  ],
+  "p_one_sided": 0.0028549301737715053,
+  "covariate_odds_ratios": {
+   "age_10y": 0.8252929029973416,
+   "male": 0.9634697366179411,
+   "rectum": 0.7949821963026908,
+   "proximal": 0.7088626739753268,
+   "log_coding": 0.8926308747065661,
+   "purity": 2.7686155030329287
+  },
+  "purity_covariate": "median allele fraction",
+  "tumours_with_stage": 451,
+  "excluded_incomplete_covariates": 0,
+  "carriers": 44,
+  "carriers_stage_iv": 13,
+  "others": 407,
+  "others_stage_iv": 59,
+  "fraction_stage_iv_carriers": 0.29545454545454547,
+  "fraction_stage_iv_others": 0.14496314496314497,
+  "fisher_odds_ratio": 2.4734827774740293,
+  "fisher_p_one_sided": 0.012528449558483945
+ },
+ "decision": {
+  "H1": {
+   "p_one_sided": 1.6827522260914686e-16,
+   "threshold": 0.05,
+   "supported": true
+  },
+  "H2": {
+   "p_one_sided": 0.0028549301737715053,
+   "threshold": 0.05,
+   "supported": true,
+   "tested": true
+  }
+ },
+ "S1_reactome_sets": [
+  {
+   "set": "REACTOME_RUNX1_REGULATES_GENES_INVOLVED_IN_MEGAKARYOCYTE_DIFFERENTIATION_AND_PLATELET_FUNCTION",
+   "observed": 30,
+   "expected": 9.94854180677484,
+   "p": 1.0493004955394417e-06,
+   "observed_without_core": 8,
+   "expected_without_core": 7.436794987341952,
+   "p_without_core": 0.46380433541540517,
+   "q": 9.443704459854975e-06
+  },
+  {
+   "set": "REACTOME_TRANSCRIPTIONAL_REGULATION_BY_RUNX1",
+   "observed": 61,
+   "expected": 31.084039859710128,
+   "p": 3.331252097322958e-06,
+   "observed_without_core": 36,
+   "expected_without_core": 27.642704681139247,
+   "p_without_core": 0.07784511791444884,
+   "q": 1.4990634437953311e-05
+  },
+  {
+   "set": "REACTOME_STAT3_NUCLEAR_EVENTS_DOWNSTREAM_OF_ALK_SIGNALING",
+   "observed": 12,
+   "expected": 2.0436942562059937,
+   "p": 5.403267698026864e-06,
+   "observed_without_core": 3,
+   "expected_without_core": 1.277126905233317,
+   "p_without_core": 0.14105508262563457,
+   "q": 1.620980309408059e-05
+  },
+  {
+   "set": "REACTOME_ACTIVATION_OF_ANTERIOR_HOX_GENES_IN_HINDBRAIN_DEVELOPMENT_DURING_EARLY_EMBRYOGENESIS",
+   "observed": 27,
+   "expected": 11.145762499602592,
+   "p": 9.227197391582648e-05,
+   "observed_without_core": 14,
+   "expected_without_core": 8.811568741515403,
+   "p_without_core": 0.0709405927029482,
+   "q": 0.00016488676001789608
+  },
+  {
+   "set": "REACTOME_FOXO_MEDIATED_TRANSCRIPTION",
+   "observed": 23,
+   "expected": 8.921315244526243,
+   "p": 0.00010359938457975791,
+   "observed_without_core": 11,
+   "expected_without_core": 7.225159534415573,
+   "p_without_core": 0.12046986443305213,
+   "q": 0.00016488676001789608
+  },
+  {
+   "set": "REACTOME_SUMOYLATION_OF_TRANSCRIPTION_COFACTORS",
+   "observed": 21,
+   "expected": 7.770151370724239,
+   "p": 0.00010992450667859737,
+   "observed_without_core": 9,
+   "expected_without_core": 6.073995660613571,
+   "p_without_core": 0.16510385044173298,
+   "q": 0.00016488676001789608
+  },
+  {
+   "set": "REACTOME_NEF_AND_SIGNAL_TRANSDUCTION",
+   "observed": 10,
+   "expected": 2.018522341835675,
+   "p": 0.00013258166943628003,
+   "observed_without_core": 10,
+   "expected_without_core": 2.018522341835675,
+   "p_without_core": 0.00013258166943628003,
+   "q": 0.0001665740481527868
+  },
+  {
+   "set": "REACTOME_TRAF6_MEDIATED_IRF7_ACTIVATION",
+   "observed": 14,
+   "expected": 4.028000661648848,
+   "p": 0.00014806582058025494,
+   "observed_without_core": 6,
+   "expected_without_core": 2.710698301149227,
+   "p_without_core": 0.061088632901463165,
+   "q": 0.0001665740481527868
+  },
+  {
+   "set": "REACTOME_DEUBIQUITINATION",
+   "observed": 65,
+   "expected": 39.75875471999905,
+   "p": 0.00023335091499102582,
+   "observed_without_core": 47,
+   "expected_without_core": 37.70940619683143,
+   "p_without_core": 0.08559912751991963,
+   "q": 0.00023335091499102582
+  }
+ ],
+ "S2_matched_null": {
+  "observed_fraction_stage_iv": 0.29545454545454547,
+  "null_median": 0.13953488372093023,
+  "null_95th_percentile": 0.21951219512195122,
+  "p_empirical": 0.0011997600479904018,
+  "draws": 5000
+ },
+ "S3_per_gene": [
+  {
+   "gene": "EP300",
+   "carriers": "<5",
+   "carriers_stage_iv": 0,
+   "leave_out_odds_ratio": 3.2018735548849926,
+   "leave_out_p_one_sided": 0.000969699395690489
+  },
+  {
+   "gene": "CREBBP",
+   "carriers": "<5",
+   "carriers_stage_iv": "<5",
+   "leave_out_odds_ratio": 2.699525594161425,
+   "leave_out_p_one_sided": 0.004499296995455848
+  },
+  {
+   "gene": "KMT2C",
+   "carriers": 8,
+   "carriers_stage_iv": "<5",
+   "leave_out_odds_ratio": 2.7823455708733147,
+   "leave_out_p_one_sided": 0.004993648376674626
+  },
+  {
+   "gene": "KMT2B",
+   "carriers": "<5",
+   "carriers_stage_iv": "<5",
+   "leave_out_odds_ratio": 2.5901638722708094,
+   "leave_out_p_one_sided": 0.005949708493683212
+  },
+  {
+   "gene": "SIN3A",
+   "carriers": 5,
+   "carriers_stage_iv": "<5",
+   "leave_out_odds_ratio": 2.8258623125675175,
+   "leave_out_p_one_sided": 0.0033684365885182075
+  },
+  {
+   "gene": "ASXL1",
+   "carriers": 5,
+   "carriers_stage_iv": "<5",
+   "leave_out_odds_ratio": 2.2431136253219592,
+   "leave_out_p_one_sided": 0.022791289489941184
+  },
+  {
+   "gene": "ASXL2",
+   "carriers": "<5",
+   "carriers_stage_iv": "<5",
+   "leave_out_odds_ratio": 2.8177067194263663,
+   "leave_out_p_one_sided": 0.0034103191215837606
+  },
+  {
+   "gene": "USP9X",
+   "carriers": 7,
+   "carriers_stage_iv": "<5",
+   "leave_out_odds_ratio": 2.3010743313210416,
+   "leave_out_p_one_sided": 0.01948648490563414
+  },
+  {
+   "gene": "TNRC6B",
+   "carriers": 7,
+   "carriers_stage_iv": "<5",
+   "leave_out_odds_ratio": 3.414221753492979,
+   "leave_out_p_one_sided": 0.0005727728846236871
+  }
+ ],
+ "S7_sensitivity": {
+  "unadjusted": {
+   "n": 451,
+   "odds_ratio": 2.4734827774740293,
+   "ci95": [
+    1.2234378775602424,
+    5.00075824255276
+   ],
+   "p_one_sided": 0.0058438317393791385,
+   "covariate_odds_ratios": {}
+  },
+  "without_location": {
+   "n": 451,
+   "odds_ratio": 2.623669105655091,
+   "ci95": [
+    1.2834470641472866,
+    5.363399682200706
+   ],
+   "p_one_sided": 0.004096537579413564,
+   "covariate_odds_ratios": {
+    "age_10y": 0.8197149092047613,
+    "male": 0.9583733471575295,
+    "log_coding": 0.8610414432526005,
+    "purity": 2.7171562835174257
+   }
+  },
+  "substitution_carriers_only": {
+   "n": 451,
+   "odds_ratio": 3.3727184304421765,
+   "ci95": [
+    1.5692357419035954,
+    7.248897859824027
+   ],
+   "p_one_sided": 0.0009222358728346832,
+   "covariate_odds_ratios": {
+    "age_10y": 0.8206714378484798,
+    "male": 0.9445180992176934,
+    "rectum": 0.8118758723537177,
+    "proximal": 0.7141148706304481,
+    "log_coding": 0.8960639366342464,
+    "purity": 3.278170523874874
+   }
+  }
+ },
+ "S4_clonality": {
+  "core_truncating": {
+   "n": 48,
+   "median_relative_vaf": 1.2718832453825857,
+   "clonal_fraction": 0.8333333333333334
+  },
+  "apc_tp53_truncating": {
+   "n": 623,
+   "median_relative_vaf": 1.240740740740741,
+   "clonal_fraction": 0.8747993579454254
+  },
+  "synonymous": {
+   "n": 16059,
+   "median_relative_vaf": 1.003757380568975,
+   "clonal_fraction": 0.6864063764867053
+  },
+  "p_core_vs_synonymous": 0.0001701130122689527,
+  "p_core_vs_apc_tp53": 0.8335200629858415
+ },
+ "S5_survival": {
+  "OS": {
+   "unadjusted": {
+    "hazard_ratio": 1.5922307274338403,
+    "ci95": [
+     0.8656989572125514,
+     2.9284991835355068
+    ],
+    "p_two_sided": 0.13462964667488078,
+    "tumours": 435,
+    "carriers": 42,
+    "events": 89,
+    "events_carriers": 12
+   },
+   "stage_stratified": {
+    "hazard_ratio": 1.3293538621550842,
+    "ci95": [
+     0.7130200284800075,
+     2.478446074781178
+    ],
+    "p_two_sided": 0.37039433371386143,
+    "tumours": 435,
+    "carriers": 42,
+    "events": 89,
+    "events_carriers": 12
+   },
+   "stages_i_iii": {
+    "hazard_ratio": 1.122917282548134,
+    "ci95": [
+     0.4445802263052334,
+     2.8362557505640513
+    ],
+    "p_two_sided": 0.806278658802801,
+    "tumours": 366,
+    "carriers": 30,
+    "events": 57,
+    "events_carriers": 5
+   }
+  },
+  "PFI": {
+   "unadjusted": {
+    "hazard_ratio": 1.249762347049905,
+    "ci95": [
+     0.7018511754663013,
+     2.2254090022232647
+    ],
+    "p_two_sided": 0.44884091191914,
+    "tumours": 433,
+    "carriers": 42,
+    "events": 117,
+    "events_carriers": 13
+   },
+   "stage_stratified": {
+    "hazard_ratio": 1.0452190917664204,
+    "ci95": [
+     0.582456930265487,
+     1.8756458941866503
+    ],
+    "p_two_sided": 0.8821499601232334,
+    "tumours": 433,
+    "carriers": 42,
+    "events": 117,
+    "events_carriers": 13
+   },
+   "stages_i_iii": {
+    "hazard_ratio": 0.6678957006995623,
+    "ci95": [
+     0.24326487020012122,
+     1.8337405916686156
+    ],
+    "p_two_sided": 0.4334691066838795,
+    "tumours": 366,
+    "carriers": 30,
+    "events": 75,
+    "events_carriers": "<5"
+   }
+  }
+ },
+ "S6_msi": {
+  "tumours": 73,
+  "observed": 18,
+  "expected": 10.334292754202984,
+  "p_one_sided": 0.023793689771563868
+ },
+ "provenance": {
+  "commit": "3cc0ca1a5ccccf15146b9550fb78f43b1c3cc970",
+  "uncommitted_changes": false,
+  "spec_sha256": "86b25d40ff3cb1eb8d3244a9bc800911bda7345a6c55d4b464fc5de77459d479",
+  "gene_sets_sha256": "dc65b83ab1a65785a41ac7efe2e1ae7e2b2a9f7f345470899b054fed340deaa7",
+  "dndscv": "0.0.1.0",
+  "python": "3.11.15",
+  "numpy": "2.0.2",
+  "pandas": "2.2.3",
+  "scipy": "1.17.1",
+  "statsmodels": "0.15.0",
+  "run_at": "2026-10-01T21:57:00+00:00"
+ }
+}
