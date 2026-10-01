@@ -6,7 +6,7 @@ maf <- rbindlist(lapply(c("COAD", "READ"), function(c) {
   m <- readRDS(file.path(Sys.getenv("TCGAMUTATIONS", "tcgamutations"), "inst", "extdata", "MC3", paste0(c, ".RDs")))
   d <- rbind(attr(m, "data"), attr(m, "maf.silent"), fill = TRUE)
   d[Variant_Classification %in% keep, .(SAMPLE = as.character(Tumor_Sample_Barcode), PROJECT = c,
-       chr = as.character(Chromosome), pos = Start_Position, ref = as.character(Reference_Allele),
+       chr = as.character(Chromosome), pos = as.integer(Start_Position), ref = as.character(Reference_Allele),
        mut = as.character(Tumor_Seq_Allele2), gene = as.character(Hugo_Symbol),
        class = as.character(Variant_Classification), type = as.character(Variant_Type), protein = as.character(HGVSp_Short))]
 }))
@@ -23,7 +23,7 @@ reads <- rbindlist(lapply(c("COAD", "READ"), function(c) {
   d <- rbind(attr(m, "data"), attr(m, "maf.silent"), fill = TRUE)
   d <- d[, !duplicated(names(d)), with = FALSE]
   d[Variant_Classification %in% keep, .(SAMPLE = as.character(Tumor_Sample_Barcode), chr = as.character(Chromosome),
-       pos = Start_Position, gene = as.character(Hugo_Symbol), class = as.character(Variant_Classification),
+       pos = as.integer(Start_Position), gene = as.character(Hugo_Symbol), class = as.character(Variant_Classification),
        protein = as.character(HGVSp_Short), exon = as.character(Exon_Number), t_ref = t_ref_count, t_alt = t_alt_count,
        filter = as.character(FILTER))]
 }))

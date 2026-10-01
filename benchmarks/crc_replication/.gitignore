@@ -1,0 +1,6 @@
+# individual-level inputs and intermediate files never enter the repository
+input/
+*/work/
+work/
+*.tsv.gz
+__pycache__/
