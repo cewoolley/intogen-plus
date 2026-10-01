@@ -5,7 +5,7 @@ Replication in the 100,000 Genomes Project colorectal cancers of two findings fr
 Format: OSF Preregistration, registration of existing data prior to analysis. The analysis code is part of this
 registration: `benchmarks/crc_replication` of github.com/cewoolley/intogen-plus at the commit recorded on
 registration, with SHA-256 of `spec.py` and `gene_sets.tsv` (printed by `replicate.py` in every output). At the
-time of writing: `spec.py` 86b25d40ff3cb1eb8d3244a9bc800911bda7345a6c55d4b464fc5de77459d479, `gene_sets.tsv` dc65b83ab1a65785a41ac7efe2e1ae7e2b2a9f7f345470899b054fed340deaa7 (commit 3cc0ca1).
+time of writing: `spec.py` 04373c0495677354953f5c0f327bb98b2c831569d5d395c86ac70fe6c5a95ca1, `gene_sets.tsv` dc65b83ab1a65785a41ac7efe2e1ae7e2b2a9f7f345470899b054fed340deaa7 (commit 179cad8).
 
 Items marked **[confirm]** must be checked and completed by the investigators before registering.
 

@@ -49,4 +49,4 @@ PFI: unadjusted HR 1.25 (0.70-2.23), p = 0.449; stage stratified HR 1.05 (0.58-1
 
 MSI tumours (73): co-regulator truncating 18 vs 10.3 (p = 0.0238).
 
-Commit 3cc0ca1a5ccccf15146b9550fb78f43b1c3cc970, spec.py sha256 86b25d40ff3c, gene_sets.tsv sha256 dc65b83ab1a6, dNdScv 0.0.1.0, run 2026-10-01T21:57:00+00:00.
+Commit 179cad874d6cc1c17164b8d7edc8c9a6d63f1597, spec.py sha256 04373c049567, gene_sets.tsv sha256 dc65b83ab1a6, dNdScv 0.0.1.0, run 2026-10-01T22:02:03+00:00.

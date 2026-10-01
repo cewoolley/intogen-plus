@@ -172,6 +172,14 @@
    "purity": 2.7686155030329287
   },
   "purity_covariate": "median allele fraction",
+  "covariates": [
+   "age_10y",
+   "male",
+   "rectum",
+   "proximal",
+   "log_coding",
+   "purity"
+  ],
   "tumours_with_stage": 451,
   "excluded_incomplete_covariates": 0,
   "carriers": 44,
@@ -508,9 +516,9 @@
   "p_one_sided": 0.023793689771563868
  },
  "provenance": {
-  "commit": "3cc0ca1a5ccccf15146b9550fb78f43b1c3cc970",
+  "commit": "179cad874d6cc1c17164b8d7edc8c9a6d63f1597",
   "uncommitted_changes": false,
-  "spec_sha256": "86b25d40ff3cb1eb8d3244a9bc800911bda7345a6c55d4b464fc5de77459d479",
+  "spec_sha256": "04373c0495677354953f5c0f327bb98b2c831569d5d395c86ac70fe6c5a95ca1",
   "gene_sets_sha256": "dc65b83ab1a65785a41ac7efe2e1ae7e2b2a9f7f345470899b054fed340deaa7",
   "dndscv": "0.0.1.0",
   "python": "3.11.15",
@@ -518,6 +526,6 @@
   "pandas": "2.2.3",
   "scipy": "1.17.1",
   "statsmodels": "0.15.0",
-  "run_at": "2026-10-01T21:57:00+00:00"
+  "run_at": "2026-10-01T22:02:03+00:00"
  }
 }
