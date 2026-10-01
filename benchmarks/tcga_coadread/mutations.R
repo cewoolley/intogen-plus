@@ -17,6 +17,18 @@ maf <- unique(maf[first, on = c("PATIENT", "SAMPLE")])
 cat("patients:", length(unique(maf$PATIENT)), " mutations:", nrow(maf), "\n")
 fwrite(maf, "coadread_mutations.tsv.gz", sep = "\t")
 
+# read counts and MC3 filters of the same mutations (allele fractions in crc_coregulators.py)
+reads <- rbindlist(lapply(c("COAD", "READ"), function(c) {
+  m <- readRDS(file.path(Sys.getenv("TCGAMUTATIONS", "tcgamutations"), "inst", "extdata", "MC3", paste0(c, ".RDs")))
+  d <- rbind(attr(m, "data"), attr(m, "maf.silent"), fill = TRUE)
+  d <- d[, !duplicated(names(d)), with = FALSE]
+  d[Variant_Classification %in% keep, .(SAMPLE = as.character(Tumor_Sample_Barcode), chr = as.character(Chromosome),
+       pos = Start_Position, gene = as.character(Hugo_Symbol), class = as.character(Variant_Classification),
+       protein = as.character(HGVSp_Short), exon = as.character(Exon_Number), t_ref = t_ref_count, t_alt = t_alt_count,
+       filter = as.character(FILTER))]
+}))
+fwrite(unique(reads[SAMPLE %in% first$SAMPLE]), "mutations_reads.tsv.gz", sep = "\t")
+
 out <- rbindlist(lapply(c("COAD", "READ"), function(c) {
   m <- readRDS(file.path(Sys.getenv("TCGAMUTATIONS", "tcgamutations"), "inst", "extdata", "MC3", paste0(c, ".RDs")))
   cl <- as.data.table(attr(m, "clinical.data"))

@@ -3,7 +3,8 @@
 Mining of TCGA COADREAD (MC3 somatic mutations, 553 tumours) with the pathway analysis of this fork:
 gene-level drivers (dNdScv), selection of the long tail of gene sets, and co-occurrence / mutual exclusivity
 of drivers and selected long tails with the burden-aware test, in microsatellite-stable (MSS) and
-hypermutated (MSI) tumours separately. The results are summarised in `results/crc_summary.json`.
+hypermutated (MSI) tumours separately. The results are summarised in `results/crc_summary.json` and, for the
+transcriptional co-regulator signal of MSS tumours, `results/coregulators.json`.
 
 Methylation, RNA-seq and copy number of these tumours could not be obtained in the environment where this
 was run, so only mutations are analysed.
@@ -33,13 +34,14 @@ export TCGAMUTATIONS=/path/to/TCGAmutations MSIGDBR_SYSDATA=/path/to/msigdbr/R/s
 
 | Step | Script | Output |
 |---|---|---|
-| mutations and clinical data | `mutations.R` | `coadread_mutations.tsv.gz`, `clinical.tsv` |
+| mutations, read counts and clinical data | `mutations.R` | `coadread_mutations.tsv.gz`, `mutations_reads.tsv.gz`, `clinical.tsv` |
 | MSS / MSI / POLE groups and location | `classify.py` | `tumour_groups.tsv` |
 | dNdScv per stratum (ALL, MSS, MSI), gene sets, covariates | `dnds.R` | `data/` |
 | curated CRC pathways | `gene_sets.py` | `gene_sets_crc.tsv.gz` |
 | pathway analysis of the fork per stratum | `crc_pathways.py` | `results/<STRATUM>/` |
 | exhaustive pairs, location and MSI associations, coherence | `crc_networks.py` | `results/<STRATUM>/network_pairs.tsv.gz` |
 | location-stratified tests, composition of the co-regulator signal | `crc_robust.py` | `results/robustness.json` |
+| the co-regulator long tail of MSS tumours: genes, overlap of the selected sets, MC3 filters, allele fractions, tumours | `crc_coregulators.py` | `results/coregulators.json` |
 | immune escape in hypermutated tumours | `crc_immune.py` | `results/immune_escape.json` |
 | detectable effect sizes (469 vs 2,023 tumours) | `crc_power.py` | `results/power.tsv` |
 | summary | `crc_summary.py` | `results/crc_summary.json` |

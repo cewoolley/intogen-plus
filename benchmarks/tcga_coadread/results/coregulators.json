@@ -1,0 +1,1368 @@
+{
+ "union": {
+  "sets": 9,
+  "genes": 532,
+  "observed": 160,
+  "expected": 86.52532479962674,
+  "p": 6.518445397067721e-12,
+  "rest_observed": 122,
+  "rest_expected": 81.4223550992499,
+  "rest_p": 2.8904640609189616e-05,
+  "excess_core": 32.89703029962313
+ },
+ "genes": [
+  {
+   "GENE": "EP300",
+   "TRUNC_OBS": 5,
+   "TRUNC_EXP": 0.3877140013616286,
+   "TRUNC_P": 0.00024998244540140884,
+   "MIS_OBS": 6,
+   "MIS_EXP": 3.2087281107617973,
+   "MIS_P": 0.15954447993987858,
+   "SYN_OBS": 0,
+   "SYN_EXP": 1.51919814225502,
+   "N_SETS": 8,
+   "EXCESS": 4.612285998638371,
+   "ROLE": "KAT3 acetyltransferase co-activator"
+  },
+  {
+   "GENE": "ELMO1",
+   "TRUNC_OBS": 5,
+   "TRUNC_EXP": 0.3947960376071604,
+   "TRUNC_P": 0.00021177595447172657,
+   "MIS_OBS": 9,
+   "MIS_EXP": 3.2966809652271043,
+   "MIS_P": 0.03137537239382113,
+   "SYN_OBS": 1,
+   "SYN_EXP": 1.37528084952944,
+   "N_SETS": 1,
+   "EXCESS": 4.60520396239284,
+   "ROLE": ""
+  },
+  {
+   "GENE": "TNRC6B",
+   "TRUNC_OBS": 5,
+   "TRUNC_EXP": 0.39741711267155033,
+   "TRUNC_P": 0.00021801122450181595,
+   "MIS_OBS": 5,
+   "MIS_EXP": 3.5501825934002307,
+   "MIS_P": 0.2993162592754088,
+   "SYN_OBS": 1,
+   "SYN_EXP": 1.48907587521471,
+   "N_SETS": 2,
+   "EXCESS": 4.60258288732845,
+   "ROLE": "miRNA silencing (GW182)"
+  },
+  {
+   "GENE": "ASXL1",
+   "TRUNC_OBS": 5,
+   "TRUNC_EXP": 0.5246879791897638,
+   "TRUNC_P": 0.00045368828917927514,
+   "MIS_OBS": 4,
+   "MIS_EXP": 6.6559636556525925,
+   "MIS_P": 0.8231900362596675,
+   "SYN_OBS": 5,
+   "SYN_EXP": 1.32687888216059,
+   "N_SETS": 1,
+   "EXCESS": 4.475312020810236,
+   "ROLE": "PR-DUB (BAP1 complex) subunit"
+  },
+  {
+   "GENE": "USP9X",
+   "TRUNC_OBS": 5,
+   "TRUNC_EXP": 0.9365984369564287,
+   "TRUNC_P": 0.00635032401577518,
+   "MIS_OBS": 8,
+   "MIS_EXP": 7.479617389441894,
+   "MIS_P": 0.4403947724138582,
+   "SYN_OBS": 2,
+   "SYN_EXP": 2.27482474244915,
+   "N_SETS": 1,
+   "EXCESS": 4.063401563043572,
+   "ROLE": "deubiquitinase"
+  },
+  {
+   "GENE": "KMT2C",
+   "TRUNC_OBS": 5,
+   "TRUNC_EXP": 1.016891397587565,
+   "TRUNC_P": 0.009690286729369262,
+   "MIS_OBS": 17,
+   "MIS_EXP": 8.421082875798897,
+   "MIS_P": 0.06373973153796329,
+   "SYN_OBS": 1,
+   "SYN_EXP": 4.76347226118456,
+   "N_SETS": 3,
+   "EXCESS": 3.983108602412435,
+   "ROLE": "enhancer H3K4 methyltransferase (COMPASS-like)"
+  },
+  {
+   "GENE": "SIN3A",
+   "TRUNC_OBS": 4,
+   "TRUNC_EXP": 0.3788533496110483,
+   "TRUNC_P": 0.0012468784400171719,
+   "MIS_OBS": 4,
+   "MIS_EXP": 3.4495249986415373,
+   "MIS_P": 0.428543672882189,
+   "SYN_OBS": 2,
+   "SYN_EXP": 0.901194228487551,
+   "N_SETS": 5,
+   "EXCESS": 3.6211466503889516,
+   "ROLE": "SIN3-HDAC co-repressor scaffold"
+  },
+  {
+   "GENE": "ASXL2",
+   "TRUNC_OBS": 3,
+   "TRUNC_EXP": 0.200348105659795,
+   "TRUNC_P": 0.001977422226615304,
+   "MIS_OBS": 3,
+   "MIS_EXP": 2.233204891540264,
+   "MIS_P": 0.3691104383574178,
+   "SYN_OBS": 0,
+   "SYN_EXP": 1.04877741720335,
+   "N_SETS": 1,
+   "EXCESS": 2.799651894340205,
+   "ROLE": "PR-DUB (BAP1 complex) subunit"
+  },
+  {
+   "GENE": "KMT2B",
+   "TRUNC_OBS": 3,
+   "TRUNC_EXP": 0.3308709582010955,
+   "TRUNC_P": 0.006988093516168446,
+   "MIS_OBS": 12,
+   "MIS_EXP": 5.5545311300278986,
+   "MIS_P": 0.0606227069061695,
+   "SYN_OBS": 1,
+   "SYN_EXP": 2.44903569554857,
+   "N_SETS": 2,
+   "EXCESS": 2.6691290417989046,
+   "ROLE": "H3K4 methyltransferase (COMPASS)"
+  },
+  {
+   "GENE": "PBRM1",
+   "TRUNC_OBS": 3,
+   "TRUNC_EXP": 0.3597140051236708,
+   "TRUNC_P": 0.009406877438672443,
+   "MIS_OBS": 4,
+   "MIS_EXP": 2.9010481860681847,
+   "MIS_P": 0.32997644278104243,
+   "SYN_OBS": 0,
+   "SYN_EXP": 1.13990750617446,
+   "N_SETS": 1,
+   "EXCESS": 2.6402859948763293,
+   "ROLE": ""
+  },
+  {
+   "GENE": "USP28",
+   "TRUNC_OBS": 3,
+   "TRUNC_EXP": 0.4993884734514168,
+   "TRUNC_P": 0.019036422009925384,
+   "MIS_OBS": 6,
+   "MIS_EXP": 2.8662727080517514,
+   "MIS_P": 0.10823595214060824,
+   "SYN_OBS": 2,
+   "SYN_EXP": 0.873080977107763,
+   "N_SETS": 1,
+   "EXCESS": 2.500611526548583,
+   "ROLE": ""
+  },
+  {
+   "GENE": "PLXNA4",
+   "TRUNC_OBS": 3,
+   "TRUNC_EXP": 0.7845275943320592,
+   "TRUNC_P": 0.05229953413379356,
+   "MIS_OBS": 10,
+   "MIS_EXP": 12.182326913562955,
+   "MIS_P": 0.6596823727802748,
+   "SYN_OBS": 5,
+   "SYN_EXP": 5.31294998010323,
+   "N_SETS": 1,
+   "EXCESS": 2.2154724056679407,
+   "ROLE": ""
+  },
+  {
+   "GENE": "DOCK2",
+   "TRUNC_OBS": 3,
+   "TRUNC_EXP": 0.8261882256226937,
+   "TRUNC_P": 0.0608832090097748,
+   "MIS_OBS": 12,
+   "MIS_EXP": 8.68050433844384,
+   "MIS_P": 0.23588735471546032,
+   "SYN_OBS": 3,
+   "SYN_EXP": 2.3581560763798,
+   "N_SETS": 1,
+   "EXCESS": 2.1738117743773064,
+   "ROLE": ""
+  },
+  {
+   "GENE": "CREBBP",
+   "TRUNC_OBS": 3,
+   "TRUNC_EXP": 0.9295883591379922,
+   "TRUNC_P": 0.07508183674855994,
+   "MIS_OBS": 8,
+   "MIS_EXP": 10.867422123571663,
+   "MIS_P": 0.7505295953372415,
+   "SYN_OBS": 7,
+   "SYN_EXP": 2.69332927571062,
+   "N_SETS": 5,
+   "EXCESS": 2.070411640862008,
+   "ROLE": "KAT3 acetyltransferase co-activator"
+  },
+  {
+   "GENE": "TNIP2",
+   "TRUNC_OBS": 2,
+   "TRUNC_EXP": 0.0703644817863337,
+   "TRUNC_P": 0.0029054941391775404,
+   "MIS_OBS": 1,
+   "MIS_EXP": 0.8108378107521603,
+   "MIS_P": 0.5209385765475266,
+   "SYN_OBS": 0,
+   "SYN_EXP": 0.473915465996305,
+   "N_SETS": 1,
+   "EXCESS": 1.9296355182136664,
+   "ROLE": ""
+  },
+  {
+   "GENE": "RNF128",
+   "TRUNC_OBS": 2,
+   "TRUNC_EXP": 0.12079262537835003,
+   "TRUNC_P": 0.007866675198249974,
+   "MIS_OBS": 3,
+   "MIS_EXP": 1.8490864003369174,
+   "MIS_P": 0.2861011880671051,
+   "SYN_OBS": 1,
+   "SYN_EXP": 1.22670078460888,
+   "N_SETS": 1,
+   "EXCESS": 1.87920737462165,
+   "ROLE": ""
+  }
+ ],
+ "sets": [
+  {
+   "SET": "REACTOME_RUNX1_REGULATES_GENES_INVOLVED_IN_MEGAKARYOCYTE_DIFFERENTIATION_AND_PLATELET_FUNCTION",
+   "LAYER": "truncating",
+   "GENES": 96,
+   "CORE_IN_SET": [
+    "EP300",
+    "KMT2B",
+    "KMT2C",
+    "SIN3A",
+    "TNRC6B"
+   ],
+   "OBS": 30,
+   "EXP": 9.94854180677484,
+   "P": 1.0493004955394417e-06,
+   "OBS_NO_CORE": 8,
+   "EXP_NO_CORE": 7.436794987341952,
+   "P_NO_CORE": 0.46380433541540517
+  },
+  {
+   "SET": "REACTOME_TRANSCRIPTIONAL_REGULATION_BY_RUNX1",
+   "LAYER": "truncating",
+   "GENES": 236,
+   "CORE_IN_SET": [
+    "CREBBP",
+    "EP300",
+    "KMT2B",
+    "KMT2C",
+    "SIN3A",
+    "TNRC6B"
+   ],
+   "OBS": 61,
+   "EXP": 31.084039859710128,
+   "P": 3.331252097322958e-06,
+   "OBS_NO_CORE": 36,
+   "EXP_NO_CORE": 27.642704681139247,
+   "P_NO_CORE": 0.07784511791444884
+  },
+  {
+   "SET": "REACTOME_STAT3_NUCLEAR_EVENTS_DOWNSTREAM_OF_ALK_SIGNALING",
+   "LAYER": "truncating",
+   "GENES": 10,
+   "CORE_IN_SET": [
+    "EP300",
+    "SIN3A"
+   ],
+   "OBS": 12,
+   "EXP": 2.0436942562059937,
+   "P": 5.403267698026864e-06,
+   "OBS_NO_CORE": 3,
+   "EXP_NO_CORE": 1.277126905233317,
+   "P_NO_CORE": 0.14105508262563457
+  },
+  {
+   "SET": "REACTOME_ACTIVATION_OF_ANTERIOR_HOX_GENES_IN_HINDBRAIN_DEVELOPMENT_DURING_EARLY_EMBRYOGENESIS",
+   "LAYER": "truncating",
+   "GENES": 120,
+   "CORE_IN_SET": [
+    "CREBBP",
+    "EP300",
+    "KMT2C"
+   ],
+   "OBS": 27,
+   "EXP": 11.145762499602592,
+   "P": 9.227197391582648e-05,
+   "OBS_NO_CORE": 14,
+   "EXP_NO_CORE": 8.811568741515403,
+   "P_NO_CORE": 0.0709405927029482
+  },
+  {
+   "SET": "REACTOME_FOXO_MEDIATED_TRANSCRIPTION",
+   "LAYER": "truncating",
+   "GENES": 63,
+   "CORE_IN_SET": [
+    "CREBBP",
+    "EP300",
+    "SIN3A"
+   ],
+   "OBS": 23,
+   "EXP": 8.921315244526243,
+   "P": 0.00010359938457975791,
+   "OBS_NO_CORE": 11,
+   "EXP_NO_CORE": 7.225159534415573,
+   "P_NO_CORE": 0.12046986443305213
+  },
+  {
+   "SET": "REACTOME_SUMOYLATION_OF_TRANSCRIPTION_COFACTORS",
+   "LAYER": "truncating",
+   "GENES": 43,
+   "CORE_IN_SET": [
+    "CREBBP",
+    "EP300",
+    "SIN3A"
+   ],
+   "OBS": 21,
+   "EXP": 7.770151370724239,
+   "P": 0.00010992450667859737,
+   "OBS_NO_CORE": 9,
+   "EXP_NO_CORE": 6.073995660613571,
+   "P_NO_CORE": 0.16510385044173298
+  },
+  {
+   "SET": "REACTOME_NEF_AND_SIGNAL_TRANSDUCTION",
+   "LAYER": "truncating",
+   "GENES": 8,
+   "CORE_IN_SET": [],
+   "OBS": 10,
+   "EXP": 2.018522341835675,
+   "P": 0.00013258166943628003,
+   "OBS_NO_CORE": 10,
+   "EXP_NO_CORE": 2.018522341835675,
+   "P_NO_CORE": 0.00013258166943628003
+  },
+  {
+   "SET": "REACTOME_TRAF6_MEDIATED_IRF7_ACTIVATION",
+   "LAYER": "truncating",
+   "GENES": 30,
+   "CORE_IN_SET": [
+    "CREBBP",
+    "EP300"
+   ],
+   "OBS": 14,
+   "EXP": 4.028000661648848,
+   "P": 0.00014806582058025494,
+   "OBS_NO_CORE": 6,
+   "EXP_NO_CORE": 2.710698301149227,
+   "P_NO_CORE": 0.061088632901463165
+  },
+  {
+   "SET": "REACTOME_DEUBIQUITINATION",
+   "LAYER": "truncating",
+   "GENES": 290,
+   "CORE_IN_SET": [
+    "ASXL1",
+    "ASXL2",
+    "EP300",
+    "USP9X"
+   ],
+   "OBS": 65,
+   "EXP": 39.75875471999905,
+   "P": 0.00023335091499102582,
+   "OBS_NO_CORE": 47,
+   "EXP_NO_CORE": 37.70940619683143,
+   "P_NO_CORE": 0.08559912751991963
+  },
+  {
+   "SET": "CRC_TGFB_BMP",
+   "LAYER": "other",
+   "GENES": 7,
+   "CORE_IN_SET": [],
+   "OBS": 6,
+   "EXP": 1.0635578781090307,
+   "P": 0.001140794980435427,
+   "OBS_NO_CORE": 6,
+   "EXP_NO_CORE": 1.0635578781090307,
+   "P_NO_CORE": 0.001140794980435427
+  },
+  {
+   "SET": "CRC_RTK_RAS",
+   "LAYER": "other",
+   "GENES": 11,
+   "CORE_IN_SET": [],
+   "OBS": 4,
+   "EXP": 2.9775578767321256,
+   "P": 0.34771608523046654,
+   "OBS_NO_CORE": 4,
+   "EXP_NO_CORE": 2.9775578767321256,
+   "P_NO_CORE": 0.34771608523046654
+  },
+  {
+   "SET": "REACTOME_CONSTITUTIVE_SIGNALING_BY_OVEREXPRESSED_ERBB2",
+   "LAYER": "other",
+   "GENES": 9,
+   "CORE_IN_SET": [],
+   "OBS": 0,
+   "EXP": 1.187965810893603,
+   "P": 1.0,
+   "OBS_NO_CORE": 0,
+   "EXP_NO_CORE": 1.187965810893603,
+   "P_NO_CORE": 1.0
+  }
+ ],
+ "leave_one_out": {
+  "set": "REACTOME_RUNX1_REGULATES_GENES_INVOLVED_IN_MEGAKARYOCYTE_DIFFERENTIATION_AND_PLATELET_FUNCTION",
+  "max_p": 5.9303194143802297e-05,
+  "worst": "EP300",
+  "rows": [
+   {
+    "LEFT_OUT": "EP300",
+    "OBS": 25,
+    "EXP": 9.56082780541321,
+    "P": 5.9303194143802297e-05
+   },
+   {
+    "LEFT_OUT": "TNRC6B",
+    "OBS": 25,
+    "EXP": 9.551124694103288,
+    "P": 5.88956288447393e-05
+   },
+   {
+    "LEFT_OUT": "SIN3A",
+    "OBS": 26,
+    "EXP": 9.56968845716379,
+    "P": 2.494872657997191e-05
+   },
+   {
+    "LEFT_OUT": "KMT2C",
+    "OBS": 25,
+    "EXP": 8.931650409187275,
+    "P": 1.9204159631928218e-05
+   },
+   {
+    "LEFT_OUT": "KMT2B",
+    "OBS": 27,
+    "EXP": 9.617670848573743,
+    "P": 1.0708774439509339e-05
+   },
+   {
+    "LEFT_OUT": "THBS1",
+    "OBS": 28,
+    "EXP": 9.713371200946943,
+    "P": 4.905806845960201e-06
+   },
+   {
+    "LEFT_OUT": "RUNX1",
+    "OBS": 29,
+    "EXP": 9.86761693988792,
+    "P": 2.4302514577605533e-06
+   },
+   {
+    "LEFT_OUT": "WDR5",
+    "OBS": 29,
+    "EXP": 9.858101701355062,
+    "P": 2.3926036847693075e-06
+   },
+   {
+    "LEFT_OUT": "MOV10",
+    "OBS": 29,
+    "EXP": 9.759440540210775,
+    "P": 2.03383006055197e-06
+   },
+   {
+    "LEFT_OUT": "TNRC6C",
+    "OBS": 29,
+    "EXP": 9.660203592356115,
+    "P": 1.7076206774755507e-06
+   },
+   {
+    "LEFT_OUT": "KMT2A",
+    "OBS": 29,
+    "EXP": 9.162690296188602,
+    "P": 6.423373075181854e-07
+   },
+   {
+    "LEFT_OUT": "KMT2D",
+    "OBS": 29,
+    "EXP": 8.736885857722491,
+    "P": 2.849945357248525e-07
+   }
+  ]
+ },
+ "core_truncating": {
+  "observed": 38,
+  "expected": 5.1029697003768675
+ },
+ "core_missense": {
+  "observed": 67,
+  "expected": 51.42025776883676,
+  "p": 0.07854722669010136
+ },
+ "core_synonymous": {
+  "observed": 19,
+  "expected": 18.465786520214124,
+  "p": 0.4812650727483264
+ },
+ "dndscv_genes": [
+  {
+   "gene_name": "EP300",
+   "ptrunc_cv": 0.000121360533807,
+   "qtrunc_cv": 0.116107356415134,
+   "qglobal_cv": 0.999999939727499
+  },
+  {
+   "gene_name": "CREBBP",
+   "ptrunc_cv": 0.0725540196022572,
+   "qtrunc_cv": 0.9161201895927,
+   "qglobal_cv": 0.999999939727499
+  },
+  {
+   "gene_name": "KMT2C",
+   "ptrunc_cv": 0.0070131186781261,
+   "qtrunc_cv": 0.9161201895927,
+   "qglobal_cv": 0.999999939727499
+  },
+  {
+   "gene_name": "KMT2B",
+   "ptrunc_cv": 0.0050006818586129,
+   "qtrunc_cv": 0.9161201895927,
+   "qglobal_cv": 0.999999939727499
+  },
+  {
+   "gene_name": "SIN3A",
+   "ptrunc_cv": 0.000811193300568,
+   "qtrunc_cv": 0.49695562204252,
+   "qglobal_cv": 0.999999939727499
+  },
+  {
+   "gene_name": "ASXL1",
+   "ptrunc_cv": 0.0001641139286527,
+   "qtrunc_cv": 0.143357084372311,
+   "qglobal_cv": 0.999999939727499
+  },
+  {
+   "gene_name": "ASXL2",
+   "ptrunc_cv": 0.0015030847203253,
+   "qtrunc_cv": 0.774319874770679,
+   "qglobal_cv": 0.573341931275056
+  },
+  {
+   "gene_name": "USP9X",
+   "ptrunc_cv": 0.0050444898258864,
+   "qtrunc_cv": 0.9161201895927,
+   "qglobal_cv": 0.999999939727499
+  },
+  {
+   "gene_name": "TNRC6B",
+   "ptrunc_cv": 7.92912504425924e-05,
+   "qtrunc_cv": 0.0885022507023403,
+   "qglobal_cv": 0.107872536293619
+  }
+ ],
+ "mutations": {
+  "table": [
+   {
+    "PATIENT": "TCGA-CM-6164",
+    "gene": "ASXL1",
+    "class": "Nonsense_Mutation",
+    "protein": "p.Q592*",
+    "VAF": 0.3034825870646766,
+    "RVAF": 1.4164011678282624,
+    "filter": "PASS",
+    "CODING": 93,
+    "LOCATION": "distal"
+   },
+   {
+    "PATIENT": "TCGA-AZ-4323",
+    "gene": "ASXL1",
+    "class": "Nonsense_Mutation",
+    "protein": "p.R1415*",
+    "VAF": 0.32653061224489793,
+    "RVAF": 2.895238095238095,
+    "filter": "PASS",
+    "CODING": 69,
+    "LOCATION": "proximal"
+   },
+   {
+    "PATIENT": "TCGA-AA-3680",
+    "gene": "ASXL1",
+    "class": "Nonsense_Mutation",
+    "protein": "p.R965*",
+    "VAF": 0.40425531914893614,
+    "RVAF": null,
+    "filter": "wga",
+    "CODING": 132,
+    "LOCATION": "proximal"
+   },
+   {
+    "PATIENT": "TCGA-EI-6511",
+    "gene": "ASXL1",
+    "class": "Nonsense_Mutation",
+    "protein": "p.S1100*",
+    "VAF": 0.15463917525773196,
+    "RVAF": 0.5025773195876289,
+    "filter": "PASS",
+    "CODING": 99,
+    "LOCATION": "rectum"
+   },
+   {
+    "PATIENT": "TCGA-DC-6681",
+    "gene": "ASXL1",
+    "class": "Nonsense_Mutation",
+    "protein": "p.W1065*",
+    "VAF": 0.23376623376623376,
+    "RVAF": 0.9213139801375095,
+    "filter": "PASS",
+    "CODING": 92,
+    "LOCATION": "rectum"
+   },
+   {
+    "PATIENT": "TCGA-AG-A00C",
+    "gene": "ASXL2",
+    "class": "Frame_Shift_Del",
+    "protein": "p.H290Pfs*21",
+    "VAF": 0.2694300518134715,
+    "RVAF": null,
+    "filter": "wga",
+    "CODING": 166,
+    "LOCATION": "rectum"
+   },
+   {
+    "PATIENT": "TCGA-AH-6643",
+    "gene": "ASXL2",
+    "class": "Nonsense_Mutation",
+    "protein": "p.R302*",
+    "VAF": 0.8395061728395061,
+    "RVAF": 3.5379188712522045,
+    "filter": "PASS",
+    "CODING": 141,
+    "LOCATION": "rectum"
+   },
+   {
+    "PATIENT": "TCGA-AA-3684",
+    "gene": "ASXL2",
+    "class": "Nonsense_Mutation",
+    "protein": "p.R357*",
+    "VAF": 0.3506224066390041,
+    "RVAF": null,
+    "filter": "wga",
+    "CODING": 162,
+    "LOCATION": "proximal"
+   },
+   {
+    "PATIENT": "TCGA-AA-3875",
+    "gene": "ASXL2",
+    "class": "Frame_Shift_Ins",
+    "protein": "p.S466Ffs*8",
+    "VAF": 0.3134715025906736,
+    "RVAF": null,
+    "filter": "wga",
+    "CODING": 146,
+    "LOCATION": "proximal"
+   },
+   {
+    "PATIENT": "TCGA-AA-3875",
+    "gene": "ASXL2",
+    "class": "Splice_Site",
+    "protein": "p.X47_splice",
+    "VAF": 0.15384615384615385,
+    "RVAF": null,
+    "filter": "wga",
+    "CODING": 146,
+    "LOCATION": "proximal"
+   },
+   {
+    "PATIENT": "TCGA-AA-3818",
+    "gene": "CREBBP",
+    "class": "Nonsense_Mutation",
+    "protein": "p.C1808*",
+    "VAF": 0.4666666666666667,
+    "RVAF": null,
+    "filter": "wga",
+    "CODING": 181,
+    "LOCATION": "proximal"
+   },
+   {
+    "PATIENT": "TCGA-AY-A54L",
+    "gene": "CREBBP",
+    "class": "Nonsense_Mutation",
+    "protein": "p.R1103*",
+    "VAF": 0.30327868852459017,
+    "RVAF": 1.6677269390751162,
+    "filter": "PASS",
+    "CODING": 180,
+    "LOCATION": "proximal"
+   },
+   {
+    "PATIENT": "TCGA-CI-6620",
+    "gene": "CREBBP",
+    "class": "Splice_Site",
+    "protein": "p.X1378_splice",
+    "VAF": 0.21568627450980393,
+    "RVAF": 0.7435500515995873,
+    "filter": "PASS",
+    "CODING": 76,
+    "LOCATION": "rectum"
+   },
+   {
+    "PATIENT": "TCGA-DC-6682",
+    "gene": "EP300",
+    "class": "Nonsense_Mutation",
+    "protein": "p.Q184*",
+    "VAF": 0.2786885245901639,
+    "RVAF": 1.1147540983606556,
+    "filter": "PASS",
+    "CODING": 169,
+    "LOCATION": "rectum"
+   },
+   {
+    "PATIENT": "TCGA-CM-6163",
+    "gene": "EP300",
+    "class": "Nonsense_Mutation",
+    "protein": "p.Q757*",
+    "VAF": 0.33,
+    "RVAF": 1.1509215671806983,
+    "filter": "PASS",
+    "CODING": 127,
+    "LOCATION": "distal"
+   },
+   {
+    "PATIENT": "TCGA-D5-5540",
+    "gene": "EP300",
+    "class": "Splice_Site",
+    "protein": "p.X1243_splice",
+    "VAF": 0.42063492063492064,
+    "RVAF": 1.0000881756458866,
+    "filter": "PASS",
+    "CODING": 161,
+    "LOCATION": "proximal"
+   },
+   {
+    "PATIENT": "TCGA-D5-5540",
+    "gene": "EP300",
+    "class": "Splice_Site",
+    "protein": "p.X1243_splice",
+    "VAF": 0.4189723320158103,
+    "RVAF": 0.9961352579555868,
+    "filter": "PASS",
+    "CODING": 161,
+    "LOCATION": "proximal"
+   },
+   {
+    "PATIENT": "TCGA-A6-5659",
+    "gene": "EP300",
+    "class": "Splice_Site",
+    "protein": "p.X428_splice",
+    "VAF": 0.5961538461538461,
+    "RVAF": 1.4903846153846152,
+    "filter": "PASS",
+    "CODING": 267,
+    "LOCATION": "proximal"
+   },
+   {
+    "PATIENT": "TCGA-NH-A8F8",
+    "gene": "KMT2B",
+    "class": "Nonsense_Mutation",
+    "protein": "p.Q998*",
+    "VAF": 0.42424242424242425,
+    "RVAF": 1.2938655237074739,
+    "filter": "PASS",
+    "CODING": 135,
+    "LOCATION": "proximal"
+   },
+   {
+    "PATIENT": "TCGA-G4-6294",
+    "gene": "KMT2B",
+    "class": "Nonsense_Mutation",
+    "protein": "p.R1517*",
+    "VAF": 0.3684210526315789,
+    "RVAF": 0.9018067556952082,
+    "filter": "PASS",
+    "CODING": 184,
+    "LOCATION": "proximal"
+   },
+   {
+    "PATIENT": "TCGA-G4-6299",
+    "gene": "KMT2B",
+    "class": "Nonsense_Mutation",
+    "protein": "p.R1864*",
+    "VAF": 0.44680851063829785,
+    "RVAF": 1.5101237855997096,
+    "filter": "PASS",
+    "CODING": 206,
+    "LOCATION": "distal"
+   },
+   {
+    "PATIENT": "TCGA-AD-6899",
+    "gene": "KMT2C",
+    "class": "Nonsense_Mutation",
+    "protein": "p.E87*",
+    "VAF": 0.5333333333333333,
+    "RVAF": 2.036363636363636,
+    "filter": "PASS",
+    "CODING": 197,
+    "LOCATION": "proximal"
+   },
+   {
+    "PATIENT": "TCGA-DY-A1DF",
+    "gene": "KMT2C",
+    "class": "Frame_Shift_Ins",
+    "protein": "p.F416Vfs*31",
+    "VAF": 0.22355769230769232,
+    "RVAF": 0.5895676846318328,
+    "filter": "PASS",
+    "CODING": 167,
+    "LOCATION": "rectum"
+   },
+   {
+    "PATIENT": "TCGA-CM-6167",
+    "gene": "KMT2C",
+    "class": "Frame_Shift_Del",
+    "protein": "p.I4868Lfs*37",
+    "VAF": 0.24548736462093862,
+    "RVAF": 1.8166064981949457,
+    "filter": "PASS",
+    "CODING": 101,
+    "LOCATION": "proximal"
+   },
+   {
+    "PATIENT": "TCGA-AA-3662",
+    "gene": "KMT2C",
+    "class": "Nonsense_Mutation",
+    "protein": "p.K1247*",
+    "VAF": 0.5946502057613169,
+    "RVAF": 2.040494647755374,
+    "filter": "PASS",
+    "CODING": 106,
+    "LOCATION": "distal"
+   },
+   {
+    "PATIENT": "TCGA-AA-3496",
+    "gene": "KMT2C",
+    "class": "Nonsense_Mutation",
+    "protein": "p.R1377*",
+    "VAF": 0.4883720930232558,
+    "RVAF": 1.4651162790697674,
+    "filter": "PASS",
+    "CODING": 200,
+    "LOCATION": "proximal"
+   },
+   {
+    "PATIENT": "TCGA-AY-A69D",
+    "gene": "KMT2C",
+    "class": "Nonsense_Mutation",
+    "protein": "p.R3079*",
+    "VAF": 0.41954022988505746,
+    "RVAF": 1.5399385840342763,
+    "filter": "PASS",
+    "CODING": 241,
+    "LOCATION": "proximal"
+   },
+   {
+    "PATIENT": "TCGA-A6-5666",
+    "gene": "KMT2C",
+    "class": "Nonsense_Mutation",
+    "protein": "p.R4806*",
+    "VAF": 0.5404411764705882,
+    "RVAF": 1.2666339869281045,
+    "filter": "PASS",
+    "CODING": 112,
+    "LOCATION": "distal"
+   },
+   {
+    "PATIENT": "TCGA-A6-2671",
+    "gene": "KMT2C",
+    "class": "Frame_Shift_Ins",
+    "protein": "p.W4352Mfs*17",
+    "VAF": 0.4066666666666667,
+    "RVAF": 1.1310416666666667,
+    "filter": "PASS",
+    "CODING": 98,
+    "LOCATION": "distal"
+   },
+   {
+    "PATIENT": "TCGA-AH-6897",
+    "gene": "SIN3A",
+    "class": "Frame_Shift_Ins",
+    "protein": "p.G189Wfs*5",
+    "VAF": 0.19383259911894274,
+    "RVAF": 0.6388389202314585,
+    "filter": "PASS",
+    "CODING": 140,
+    "LOCATION": "rectum"
+   },
+   {
+    "PATIENT": "TCGA-D5-6924",
+    "gene": "SIN3A",
+    "class": "Nonsense_Mutation",
+    "protein": "p.L353*",
+    "VAF": 0.20512820512820512,
+    "RVAF": 0.7166313808515643,
+    "filter": "PASS",
+    "CODING": 189,
+    "LOCATION": "distal"
+   },
+   {
+    "PATIENT": "TCGA-G4-6293",
+    "gene": "SIN3A",
+    "class": "Nonsense_Mutation",
+    "protein": "p.Q210*",
+    "VAF": 0.3341232227488152,
+    "RVAF": 1.152384176419383,
+    "filter": "PASS",
+    "CODING": 145,
+    "LOCATION": "proximal"
+   },
+   {
+    "PATIENT": "TCGA-AG-3725",
+    "gene": "SIN3A",
+    "class": "Nonsense_Mutation",
+    "protein": "p.R1140*",
+    "VAF": 0.32558139534883723,
+    "RVAF": 1.0468454434182708,
+    "filter": "PASS",
+    "CODING": 114,
+    "LOCATION": "rectum"
+   },
+   {
+    "PATIENT": "TCGA-A6-2674",
+    "gene": "SIN3A",
+    "class": "Nonsense_Mutation",
+    "protein": "p.R553*",
+    "VAF": 0.16666666666666666,
+    "RVAF": 1.3810568659718412,
+    "filter": "PASS",
+    "CODING": 170,
+    "LOCATION": "distal"
+   },
+   {
+    "PATIENT": "TCGA-AY-A71X",
+    "gene": "TNRC6B",
+    "class": "Frame_Shift_Ins",
+    "protein": "p.A1354Tfs*46",
+    "VAF": 0.34285714285714286,
+    "RVAF": 0.7875754075214992,
+    "filter": "PASS",
+    "CODING": 110,
+    "LOCATION": "proximal"
+   },
+   {
+    "PATIENT": "TCGA-D5-6924",
+    "gene": "TNRC6B",
+    "class": "Nonsense_Mutation",
+    "protein": "p.E90*",
+    "VAF": 0.19642857142857142,
+    "RVAF": 0.6862385321100918,
+    "filter": "PASS",
+    "CODING": 189,
+    "LOCATION": "distal"
+   },
+   {
+    "PATIENT": "TCGA-AG-A011",
+    "gene": "TNRC6B",
+    "class": "Nonsense_Mutation",
+    "protein": "p.R1100*",
+    "VAF": 0.19879518072289157,
+    "RVAF": null,
+    "filter": "wga",
+    "CODING": 132,
+    "LOCATION": "rectum"
+   },
+   {
+    "PATIENT": "TCGA-AA-3673",
+    "gene": "TNRC6B",
+    "class": "Nonsense_Mutation",
+    "protein": "p.R1315*",
+    "VAF": 0.4090909090909091,
+    "RVAF": null,
+    "filter": "wga",
+    "CODING": 88,
+    "LOCATION": "proximal"
+   },
+   {
+    "PATIENT": "TCGA-AG-A01L",
+    "gene": "TNRC6B",
+    "class": "Nonsense_Mutation",
+    "protein": "p.R852*",
+    "VAF": 0.7261904761904762,
+    "RVAF": null,
+    "filter": "wga",
+    "CODING": 78,
+    "LOCATION": "rectum"
+   },
+   {
+    "PATIENT": "TCGA-AA-A02Y",
+    "gene": "TNRC6B",
+    "class": "Nonsense_Mutation",
+    "protein": "p.W709*",
+    "VAF": 0.3522727272727273,
+    "RVAF": null,
+    "filter": "wga",
+    "CODING": 135,
+    "LOCATION": "proximal"
+   },
+   {
+    "PATIENT": "TCGA-NH-A8F8",
+    "gene": "TNRC6B",
+    "class": "Frame_Shift_Del",
+    "protein": "p.Y593Tfs*16",
+    "VAF": 0.4166666666666667,
+    "RVAF": 1.2707607822126976,
+    "filter": "PASS",
+    "CODING": 135,
+    "LOCATION": "proximal"
+   },
+   {
+    "PATIENT": "TCGA-A6-5660",
+    "gene": "USP9X",
+    "class": "Nonsense_Mutation",
+    "protein": "p.E93*",
+    "VAF": 0.8512035010940919,
+    "RVAF": 2.751122014747271,
+    "filter": "PASS",
+    "CODING": 159,
+    "LOCATION": "proximal"
+   },
+   {
+    "PATIENT": "TCGA-CK-5912",
+    "gene": "USP9X",
+    "class": "Frame_Shift_Ins",
+    "protein": "p.K2377*",
+    "VAF": 0.5078260869565218,
+    "RVAF": 1.3654938033849153,
+    "filter": "PASS",
+    "CODING": 77,
+    "LOCATION": "proximal"
+   },
+   {
+    "PATIENT": "TCGA-AG-3605",
+    "gene": "USP9X",
+    "class": "Nonsense_Mutation",
+    "protein": "p.R1799*",
+    "VAF": 0.5816023738872403,
+    "RVAF": null,
+    "filter": "gapfiller,native_wga_mix",
+    "CODING": 14,
+    "LOCATION": "rectum"
+   },
+   {
+    "PATIENT": "TCGA-CM-5862",
+    "gene": "USP9X",
+    "class": "Splice_Site",
+    "protein": "p.X2406_splice",
+    "VAF": 0.8770053475935828,
+    "RVAF": 2.357245089580267,
+    "filter": "PASS",
+    "CODING": 119,
+    "LOCATION": "proximal"
+   },
+   {
+    "PATIENT": "TCGA-CM-6165",
+    "gene": "USP9X",
+    "class": "Splice_Site",
+    "protein": "p.X633_splice",
+    "VAF": 0.7160493827160493,
+    "RVAF": 2.077134986225895,
+    "filter": "PASS",
+    "CODING": 133,
+    "LOCATION": "distal"
+   },
+   {
+    "PATIENT": "TCGA-D5-6538",
+    "gene": "USP9X",
+    "class": "Frame_Shift_Del",
+    "protein": "p.Y1953Mfs*7",
+    "VAF": 0.40939597315436244,
+    "RVAF": 1.04834628884385,
+    "filter": "PASS",
+    "CODING": 160,
+    "LOCATION": "proximal"
+   },
+   {
+    "PATIENT": "TCGA-AZ-4682",
+    "gene": "USP9X",
+    "class": "Nonsense_Mutation",
+    "protein": "p.Y2336*",
+    "VAF": 0.8525641025641025,
+    "RVAF": 2.4059590316573556,
+    "filter": "PASS",
+    "CODING": 96,
+    "LOCATION": "distal"
+   }
+  ],
+  "comparison": {
+   "core truncating": {
+    "n": 48,
+    "pass": 0.7708333333333334,
+    "wga": 0.22916666666666666,
+    "oxog": 0.0,
+    "rvaf_median": 1.2707607822126976,
+    "clonal": 0.625
+   },
+   "core truncating substitutions": {
+    "n": 38,
+    "pass": 0.7631578947368421,
+    "wga": 0.23684210526315788,
+    "oxog": 0.0,
+    "rvaf_median": 1.3810568659718412,
+    "clonal": 0.6578947368421053
+   },
+   "driver truncating (APC, TP53)": {
+    "n": 625,
+    "pass": 0.696,
+    "wga": 0.3008,
+    "oxog": 0.0016,
+    "rvaf_median": 1.2517460517208836,
+    "clonal": 0.5984
+   },
+   "driver hotspots (KRAS, PIK3CA, BRAF)": {
+    "n": 347,
+    "pass": 0.7031700288184438,
+    "wga": 0.28530259365994237,
+    "oxog": 0.0,
+    "rvaf_median": 1.2572114863252868,
+    "clonal": 0.6685878962536023
+   },
+   "other long-tail truncating": {
+    "n": 4845,
+    "pass": 0.6982456140350877,
+    "wga": 0.28152734778121774,
+    "oxog": 0.0026831785345717233,
+    "rvaf_median": 0.9361267673395361,
+    "clonal": 0.4565531475748194
+   },
+   "synonymous": {
+    "n": 16194,
+    "pass": 0.7086575274793133,
+    "wga": 0.2542917129801161,
+    "oxog": 0.0033345683586513525,
+    "rvaf_median": 1.0056980519480518,
+    "clonal": 0.5068543905150056
+   }
+  },
+  "p_rvaf_vs_synonymous": 0.0014341819745429746,
+  "p_rvaf_vs_apc_tp53": 0.9870351771211826
+ },
+ "spectrum": {
+  "core": {
+   "C>T": 22,
+   "C>A": 5,
+   "A>T": 4
+  },
+  "background_fraction": {
+   "C>T": 0.6016921575008135,
+   "C>A": 0.2850634559062805,
+   "A>T": 0.07224210868857793,
+   "C>G": 0.0292873413602343,
+   "A>C": 0.01171493654409372
+  },
+  "cga_tga": 15
+ },
+ "tumours": {
+  "carriers": 44,
+  "carriers_substitution": 36,
+  "mutations": 48,
+  "events": 47,
+  "two_or_more_genes": 2,
+  "two_or_more_expected": 1.8811534528551592,
+  "stage_iv_odds": 2.502379693283977,
+  "p_stage_iv": 0.015025518141218802,
+  "usp9x": [
+   {
+    "PATIENT": "TCGA-A6-5660",
+    "VAF": 0.8512035010940919,
+    "SEX": "MALE"
+   },
+   {
+    "PATIENT": "TCGA-AZ-4682",
+    "VAF": 0.8525641025641025,
+    "SEX": "MALE"
+   },
+   {
+    "PATIENT": "TCGA-CK-5912",
+    "VAF": 0.5078260869565218,
+    "SEX": "MALE"
+   },
+   {
+    "PATIENT": "TCGA-CM-5862",
+    "VAF": 0.8770053475935828,
+    "SEX": "MALE"
+   },
+   {
+    "PATIENT": "TCGA-CM-6165",
+    "VAF": 0.7160493827160493,
+    "SEX": "MALE"
+   },
+   {
+    "PATIENT": "TCGA-D5-6538",
+    "VAF": 0.40939597315436244,
+    "SEX": "FEMALE"
+   },
+   {
+    "PATIENT": "TCGA-AG-3605",
+    "VAF": 0.5816023738872403,
+    "SEX": "FEMALE"
+   }
+  ],
+  "frameshift_fraction": 0.20833333333333334,
+  "location": {
+   "False": {
+    "distal": 147,
+    "proximal": 145,
+    "rectum": 122
+   },
+   "True": {
+    "distal": 10,
+    "proximal": 22,
+    "rectum": 12
+   }
+  },
+  "stage": {
+   "False": {
+    "I": 74,
+    "II": 142,
+    "III": 136,
+    "IV": 61
+   },
+   "True": {
+    "I": 8,
+    "II": 11,
+    "III": 12,
+    "IV": 13
+   }
+  },
+  "burden_carriers": 135.0,
+  "burden_others": 129.0,
+  "p_burden": 0.5590435039816011,
+  "p_age": 0.14640819155300808,
+  "p_location": 0.11042045135389014,
+  "p_stage": 0.0785129470474216
+ },
+ "cooccurrence": [
+  {
+   "OTHER": "mutation:FBXW7",
+   "SET": "mutation_truncating:REACTOME_SUMOYLATION_OF_TRANSCRIPTION_COFACTORS",
+   "TUMOURS_1": 58,
+   "TUMOURS_2": 24,
+   "TUMOURS_BOTH": 10,
+   "EXPECTED_BOTH": 3.2458739722226824,
+   "P_VALUE": 0.0018337238612027,
+   "Q_VALUE": 1.0
+  },
+  {
+   "OTHER": "mutation:PIK3CA",
+   "SET": "mutation_truncating:REACTOME_TRANSCRIPTIONAL_REGULATION_BY_RUNX1",
+   "TUMOURS_1": 110,
+   "TUMOURS_2": 69,
+   "TUMOURS_BOTH": 28,
+   "EXPECTED_BOTH": 17.607368795730785,
+   "P_VALUE": 0.0112504055200009,
+   "Q_VALUE": 1.0
+  },
+  {
+   "OTHER": "mutation:CRC_RTK_RAS_LONG_TAIL",
+   "SET": "mutation_truncating:REACTOME_NEF_AND_SIGNAL_TRANSDUCTION",
+   "TUMOURS_1": 61,
+   "TUMOURS_2": 13,
+   "TUMOURS_BOTH": 6,
+   "EXPECTED_BOTH": 1.9923010503075091,
+   "P_VALUE": 0.0158443699492318,
+   "Q_VALUE": 1.0
+  },
+  {
+   "OTHER": "mutation:ELF3",
+   "SET": "mutation_truncating:REACTOME_STAT3_NUCLEAR_EVENTS_DOWNSTREAM_OF_ALK_SIGNALING",
+   "TUMOURS_1": 9,
+   "TUMOURS_2": 12,
+   "TUMOURS_BOTH": 2,
+   "EXPECTED_BOTH": 0.2428021031336157,
+   "P_VALUE": 0.0250654960088113,
+   "Q_VALUE": 1.0
+  },
+  {
+   "OTHER": "mutation:RBM10",
+   "SET": "mutation_truncating:REACTOME_DEUBIQUITINATION",
+   "TUMOURS_1": 10,
+   "TUMOURS_2": 82,
+   "TUMOURS_BOTH": 5,
+   "EXPECTED_BOTH": 1.6652277790540886,
+   "P_VALUE": 0.0271988013262036,
+   "Q_VALUE": 1.0
+  },
+  {
+   "OTHER": "mutation:RGMB",
+   "SET": "mutation_truncating:REACTOME_RUNX1_REGULATES_GENES_INVOLVED_IN_MEGAKARYOCYTE_DIFFERENTIATION_AND_PLATELET_FUNCTION",
+   "TUMOURS_1": 8,
+   "TUMOURS_2": 35,
+   "TUMOURS_BOTH": 3,
+   "EXPECTED_BOTH": 0.6655600489670066,
+   "P_VALUE": 0.0299202102664047,
+   "Q_VALUE": 1.0
+  }
+ ],
+ "exclusivity": [
+  {
+   "OTHER": "mutation:SMAD4",
+   "SET": "mutation_truncating:REACTOME_SUMOYLATION_OF_TRANSCRIPTION_COFACTORS",
+   "TUMOURS_1": 55,
+   "TUMOURS_2": 24,
+   "TUMOURS_BOTH": 0,
+   "EXPECTED_BOTH": 2.9822808886169883,
+   "P_VALUE_EXCLUSIVITY": 0.0500656653303057,
+   "Q_VALUE_EXCLUSIVITY": 1.0
+  },
+  {
+   "OTHER": "mutation:PCBP1",
+   "SET": "mutation_truncating:REACTOME_DEUBIQUITINATION",
+   "TUMOURS_1": 22,
+   "TUMOURS_2": 82,
+   "TUMOURS_BOTH": 1,
+   "EXPECTED_BOTH": 4.168220624922303,
+   "P_VALUE_EXCLUSIVITY": 0.0787678112412453,
+   "Q_VALUE_EXCLUSIVITY": 1.0
+  },
+  {
+   "OTHER": "mutation:AMER1",
+   "SET": "mutation_truncating:REACTOME_SUMOYLATION_OF_TRANSCRIPTION_COFACTORS",
+   "TUMOURS_1": 41,
+   "TUMOURS_2": 24,
+   "TUMOURS_BOTH": 0,
+   "EXPECTED_BOTH": 2.401178720109064,
+   "P_VALUE_EXCLUSIVITY": 0.0896491203663821,
+   "Q_VALUE_EXCLUSIVITY": 1.0
+  },
+  {
+   "OTHER": "mutation:ZFP36L2",
+   "SET": "mutation_truncating:REACTOME_DEUBIQUITINATION",
+   "TUMOURS_1": 13,
+   "TUMOURS_2": 82,
+   "TUMOURS_BOTH": 0,
+   "EXPECTED_BOTH": 2.2244903428500598,
+   "P_VALUE_EXCLUSIVITY": 0.1075291010409174,
+   "Q_VALUE_EXCLUSIVITY": 1.0
+  }
+ ],
+ "core_MSI": {
+  "observed": 18,
+  "expected": 10.334292754202984,
+  "p": 0.023793689771563868,
+  "drivers": []
+ },
+ "core_ALL": {
+  "observed": 39,
+  "expected": 13.38607341823765,
+  "p": 1.6978980508885134e-07,
+  "drivers": [
+   "KMT2B",
+   "TNRC6B"
+  ]
+ }
+}
