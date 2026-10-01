@@ -22,7 +22,20 @@ input format below. `results_tcga/` holds its output on the discovery cohort (TC
 | `CHROM`, `POS`, `REF`, `ALT` | GRCh38 or GRCh37; indels VCF-style or MAF-style |
 | `T_ALT`, `T_DEPTH` | tumour alternate and total read counts (optional; allele fractions) |
 
-`prepare_vcf.py` writes it from somatic VCFs (Strelka2 tier-1 counts or `AD`).
+It can be written from an IntOGen-style cohort table (`prepare_intogen.py`) or from somatic VCFs (`prepare_vcf.py`,
+Strelka2 tier-1 counts or `AD`):
+
+```bash
+python prepare_intogen.py input <cohort table.tsv.gz> [more tables]
+```
+
+`prepare_intogen.py` reads `CHROMOSOME`, `POSITION`, `REF`, `ALT`, `SAMPLE` (and `DONOR` and read counts if present:
+`T_ALT`/`T_DEPTH`, `t_alt_count` with `t_depth` or `t_ref_count`, or `VAF`), keeps one sample per donor as IntOGen
+does, and writes indels MAF-style. Give it the table **before** IntOGen's `parse-variants` step: that step removes
+hypermutated samples (WGS: more than 10,000 SNVs and above Q3 + 1.5 IQR of the cohort), which drops the MSI and POLE
+tumours and can drop high-burden MSS tumours. The script warns when the table looks filtered. Without read counts,
+allele fractions are unavailable: give the cohort's `PURITY` in `samples.tsv`, otherwise purity is left out of the H2
+model (`spec.PURITY_MIN_AVAILABLE`) and the clonality analysis is skipped.
 
 `samples.tsv`, one row per tumour (one tumour per patient):
 
@@ -60,9 +73,10 @@ airlock rules before export. `work/` holds individual-level intermediate files a
   Python 3 with numpy, pandas, scipy and statsmodels.
 - Tumours: the colorectal primary tumours of the cancer programme, one per participant (the one analysed by
   Cornish et al., Nature 2024, where it applies). MSI and POLE status: the cohort's calls if available.
-- Somatic small variants: the per-tumour somatic VCFs of the cancer analysis (`prepare_vcf.py`, manifest of SAMPLE and
-  VCF path). Run `prepare_vcf.py --check 20` on one VCF first and compare with the file: Strelka2 sample columns and
-  FORMAT fields are assumed.
+- Somatic small variants: an IntOGen-style cohort table prepared in the Research Environment (`prepare_intogen.py`,
+  before `parse-variants`), or the per-tumour somatic VCFs of the cancer analysis (`prepare_vcf.py`, manifest of
+  SAMPLE and VCF path; run `prepare_vcf.py --check 20` on one VCF first: Strelka2 sample columns and FORMAT fields are
+  assumed).
 - Clinical data: stage, site, age and sex at diagnosis from the cancer registry tables; death from the mortality
   data. Table and column names differ between data releases, so they are mapped by hand into `samples.tsv`.
 - Cornish et al.'s driver list (supplementary table) as a TSV/CSV with a `gene` column enables the gene-level
@@ -75,7 +89,7 @@ airlock rules before export. `work/` holds individual-level intermediate files a
 | `PREREGISTRATION.md` | hypotheses and analysis plan |
 | `spec.py`, `gene_sets.tsv` | frozen definitions and the nine Reactome sets (MSigDB 7.5.1) |
 | `run.sh` | the pipeline |
-| `prepare_vcf.py`, `prepare_tcga.py` | inputs from somatic VCFs, or from the TCGA benchmark |
+| `prepare_intogen.py`, `prepare_vcf.py`, `prepare_tcga.py` | inputs from an IntOGen cohort table, somatic VCFs, or the TCGA benchmark |
 | `coding_filter.py`, `classify.py`, `dnds.R` | coding mutations, groups and location, dNdScv |
 | `replicate.py` | primary, secondary and feasibility analyses |
 | `power.py` | power of H1 and H2 (`results/power.tsv`) |

@@ -38,10 +38,15 @@ def counts(fmt, values, ref, alt):
 
 
 def maf_alleles(pos, ref, alt):
+    """MAF-style alleles: shared leading bases removed; deletions start at the first deleted base, insertions
+    stay at the base before them"""
+    k = 0
     if len(ref) != len(alt) or len(ref) > 1:
         while ref and alt and ref[0] == alt[0]:
-            ref, alt, pos = ref[1:], alt[1:], pos + 1
-    return pos, ref or '-', alt or '-'
+            ref, alt, k = ref[1:], alt[1:], k + 1
+    if k and not ref:
+        k -= 1
+    return pos + k, ref or '-', alt or '-'
 
 
 def parse(sample, path, tumour_column=None, limit=None):

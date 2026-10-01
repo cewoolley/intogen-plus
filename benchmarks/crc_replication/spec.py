@@ -37,6 +37,10 @@ RECTUM = ['C19', 'C19.9', 'C20', 'C20.9']
 
 # H2 model: stage IV ~ carrier + covariates (logistic regression, complete cases)
 H2_COVARIATES = ['age_10y', 'male', 'rectum', 'proximal', 'log_coding', 'purity']
+# purity: the cohort's estimates when given for at least 90% of tumours, else the median allele fraction; when
+# neither is available for at least half of the tumours (e.g. no read counts), purity is left out of the model
+PURITY_MIN_COHORT = 0.9
+PURITY_MIN_AVAILABLE = 0.5
 
 # multiplicity: fixed sequence, H1 then H2, each one-sided at ALPHA; H2 is confirmatory only if H1 is supported
 # (family-wise error rate ALPHA)

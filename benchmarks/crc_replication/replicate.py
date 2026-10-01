@@ -190,21 +190,25 @@ def stage_table(groups, mss):
     g.loc[g.LOCATION == 'NA', ['rectum', 'proximal']] = np.nan
     g['log_coding'] = np.log(g.CODING.clip(lower=1))
     purity = pd.to_numeric(g['PURITY'], errors='coerce') if 'PURITY' in g.columns else pd.Series(np.nan, index=g.index)
-    source = 'cohort purity' if purity.notna().mean() > 0.9 else 'median allele fraction'
+    source = 'cohort purity' if purity.notna().mean() >= spec.PURITY_MIN_COHORT else 'median allele fraction'
     g['purity'] = purity if source == 'cohort purity' else g.MEDIAN_VAF
+    covariates = list(spec.H2_COVARIATES)
+    if g.purity.notna().mean() < spec.PURITY_MIN_AVAILABLE:
+        source = 'not available (left out of the model)'
+        covariates.remove('purity')
     for c in ['OS', 'OS_TIME', 'PFI', 'PFI_TIME']:
         if c in g.columns:
             g[c] = pd.to_numeric(g[c], errors='coerce')
-    return g, tr, source
+    return g, tr, source, covariates
 
 
-def h2(g, purity_source):
+def h2(g, purity_source, covariates):
     d = g[g.STAGE_GROUP.notna()]
-    cc = d[spec.H2_COVARIATES].notna().all(axis=1)
-    model = logistic(d.IV[cc], d.loc[cc, ['carrier'] + spec.H2_COVARIATES])
+    cc = d[covariates].notna().all(axis=1)
+    model = logistic(d.IV[cc], d.loc[cc, ['carrier'] + covariates])
     tab = pd.crosstab(d.carrier, d.IV).reindex(index=[0.0, 1.0], columns=[0.0, 1.0], fill_value=0)
     fisher = stats.fisher_exact(tab.values, alternative='greater')
-    return {**model, 'purity_covariate': purity_source, 'tumours_with_stage': int(len(d)),
+    return {**model, 'purity_covariate': purity_source, 'covariates': covariates, 'tumours_with_stage': int(len(d)),
             'excluded_incomplete_covariates': int((~cc).sum()),
             'carriers': cell(tab.loc[1.0].sum()), 'carriers_stage_iv': cell(tab.loc[1.0, 1.0]),
             'others': cell(tab.loc[0.0].sum()), 'others_stage_iv': cell(tab.loc[0.0, 1.0]),
@@ -261,23 +265,23 @@ def matched_null(g, tr, mss):
             'p_empirical': float((np.sum(null >= observed) + 1) / (len(null) + 1)), 'draws': spec.NULL_DRAWS}
 
 
-def per_gene_and_sensitivity(g, tr):
+def per_gene_and_sensitivity(g, tr, covariates):
     d = g[g.STAGE_GROUP.notna()]
-    cc = d[spec.H2_COVARIATES].notna().all(axis=1)
+    cc = d[covariates].notna().all(axis=1)
     rows = []
     for gene in spec.CORE:
         pts = set(tr[tr.gene == gene].sampleID) & set(d.index)
         loo = d.copy()
         loo['carrier'] = loo.index.isin(set(tr[tr.gene.isin([x for x in spec.CORE if x != gene])].sampleID)).astype(float)
-        m = logistic(loo.IV[cc], loo.loc[cc, ['carrier'] + spec.H2_COVARIATES])
+        m = logistic(loo.IV[cc], loo.loc[cc, ['carrier'] + covariates])
         rows.append({'gene': gene, 'carriers': cell(len(pts)), 'carriers_stage_iv': cell(d.loc[list(pts), 'IV'].sum()),
                      'leave_out_odds_ratio': m['odds_ratio'], 'leave_out_p_one_sided': m['p_one_sided']})
     unadjusted = logistic(d.IV, d[['carrier']])
-    no_location = [c for c in spec.H2_COVARIATES if c not in ('rectum', 'proximal')]
+    no_location = [c for c in covariates if c not in ('rectum', 'proximal')]
     cc2 = d[no_location].notna().all(axis=1)
     without_location = logistic(d.IV[cc2], d.loc[cc2, ['carrier'] + no_location])
     sub = d.assign(carrier=d.carrier_substitution)
-    substitution_only = logistic(sub.IV[cc], sub.loc[cc, ['carrier'] + spec.H2_COVARIATES])
+    substitution_only = logistic(sub.IV[cc], sub.loc[cc, ['carrier'] + covariates])
     return rows, {'unadjusted': unadjusted, 'without_location': without_location, 'substitution_carriers_only': substitution_only}
 
 
@@ -285,11 +289,15 @@ def clonality(work, g, mss, tr):
     """Allele fraction relative to the tumour median (clonality proxy) of co-regulator truncations, APC/TP53
     truncations and synonymous mutations"""
     m = pd.read_csv(os.path.join(work, 'coding.tsv.gz'), sep='\t', dtype={'SAMPLE': str, 'CHROM': str})
-    if not {'T_ALT', 'T_DEPTH'} <= set(m.columns):
+    if {'T_ALT', 'T_DEPTH'} <= set(m.columns):
+        vaf = m.T_ALT / m.T_DEPTH.where(m.T_DEPTH > 0)
+    elif 'VAF' in m.columns:
+        vaf = m.VAF
+    else:
         return None
-    m = m[m.SAMPLE.isin(g.index)].copy()
+    m = m.assign(VAF=vaf)[m.SAMPLE.isin(g.index)].copy()
     m['chr'] = m.CHROM.str.replace('^chr', '', regex=True)
-    m['RVAF'] = m.T_ALT / m.T_DEPTH.where(m.T_DEPTH > 0) / m.SAMPLE.map(g.MEDIAN_VAF)
+    m['RVAF'] = m.VAF / m.SAMPLE.map(g.MEDIAN_VAF)
     key = ['SAMPLE', 'chr', 'POS']
 
     def rvaf(annot):
@@ -346,14 +354,14 @@ def main():
 
     # primary
     res['H1'] = h1(mss)
-    g, tr, purity_source = stage_table(groups, mss)
-    res['H2'] = h2(g, purity_source)
+    g, tr, purity_source, covariates = stage_table(groups, mss)
+    res['H2'] = h2(g, purity_source, covariates)
     res['decision'] = fixed_sequence(res['H1']['p_one_sided'], res['H2']['p_one_sided'])
 
     # secondary
     res['S1_reactome_sets'] = sets_secondary(mss, sets)
     res['S2_matched_null'] = matched_null(g, tr, mss)
-    res['S3_per_gene'], res['S7_sensitivity'] = per_gene_and_sensitivity(g, tr)
+    res['S3_per_gene'], res['S7_sensitivity'] = per_gene_and_sensitivity(g, tr, covariates)
     res['S4_clonality'] = clonality(a.work, g, mss, tr)
     survival = {}
     for end in ['OS', 'PFI']:

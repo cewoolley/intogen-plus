@@ -55,6 +55,8 @@ def main(mutations, regions_bed, coding_out, vaf_out):
         end = start + ref_len - 1
         if {'T_ALT', 'T_DEPTH'} <= set(chunk.columns):
             vafs.append(pd.DataFrame({'SAMPLE': chunk.SAMPLE.values, 'VAF': chunk.T_ALT / chunk.T_DEPTH.where(chunk.T_DEPTH > 0)}))
+        elif 'VAF' in chunk.columns:
+            vafs.append(chunk[['SAMPLE', 'VAF']])
         kept.append(chunk[overlaps(regions, chrom, start, end)])
     coding = pd.concat(kept)
     coding.to_csv(coding_out, sep='\t', index=False)

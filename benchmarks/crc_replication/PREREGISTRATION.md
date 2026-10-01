@@ -60,8 +60,11 @@ equivalent to their individual driver calls; H2 has not been reported for this c
 
 **Data.** Colorectal adenocarcinomas of the 100,000 Genomes Project cancer programme with tumour and matched normal
 whole-genome sequencing (the cohort of Cornish et al., about 2,000 tumours). One primary tumour per participant (the
-one analysed by Cornish et al. where it applies, else the first collected). Somatic small variants: the programme's
-somatic calls (PASS). Stage at diagnosis and site: cancer registry. Age and sex at diagnosis. Death: mortality data.
+one analysed by Cornish et al. where it applies, else the first in alphabetical order of sample identifier, as
+IntOGen does). Somatic small variants: the programme's somatic calls (PASS), from the investigators' IntOGen-style
+cohort table taken before IntOGen's hypermutator filter (`parse-variants`), so that no tumour is removed for its
+mutation burden. Stage at diagnosis and site: cancer registry. Age and sex at diagnosis. Death: mortality data.
+Purity: the cohort's estimates if available **[confirm]**.
 
 **Groups.** MSI and POLE status from the cohort's existing calls (Cornish et al.) when available for every tumour;
 otherwise from the mutations as in TCGA (`spec.py`: POLE = exonuclease-domain missense in a hypermutated tumour,
@@ -92,7 +95,9 @@ All definitions are in `spec.py` and the code; the text below summarises them.
   divisible by 3) in any of the nine genes, among the mutations dNdScv annotates in the MSS tumours.
 - **Stage IV:** stage group IV at diagnosis (registry). Tumours without stage are excluded from H2.
 - **Covariates (H2):** age / 10, male, rectum (C19-C20), proximal colon (C18.0, C18.2-C18.4), log coding mutations,
-  purity (cohort estimate, else the median allele fraction of the tumour). Complete cases.
+  purity. Purity is the cohort's estimate when available for at least 90% of tumours, else the median allele fraction
+  of the tumour; if neither is available for at least half of the tumours (e.g. a mutation table without read
+  counts), purity is left out of the model. Complete cases.
 - **Drivers of a stratum:** dNdScv `qglobal_cv` < 0.1 in that stratum; excluded from the background fit of the null
   model and from the long tails of the secondary set tests (but the nine genes are always tested in H1).
 
