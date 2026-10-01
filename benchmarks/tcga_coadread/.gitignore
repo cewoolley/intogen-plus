@@ -1,0 +1,5 @@
+data/
+results/*
+!results/crc_summary.json
+*.tsv
+*.tsv.gz
